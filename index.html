@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>매탄중학교 미술작품 전시관</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #08060a;
+            color: #e8d9b8;
+            font-family: Georgia, serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        canvas#particles {
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            padding: 90px 20px 50px;
+            border-bottom: 1px solid #c8a06033;
+        }
+
+        .year-badge {
+            font-size: 12px;
+            color: #c8a060;
+            letter-spacing: 5px;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: clamp(26px, 5vw, 50px);
+            color: #e8d9b8;
+            letter-spacing: 3px;
+            line-height: 1.4;
+            margin-bottom: 20px;
+            text-shadow: 0 0 50px #c8a06033;
+        }
+
+        .gold-line {
+            width: 80px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #c8a060, transparent);
+            margin: 28px auto;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            color: #8a7a5a;
+            letter-spacing: 3px;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 70px 24px 80px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 12px;
+            color: #c8a060;
+            letter-spacing: 6px;
+            margin-bottom: 48px;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .gallery-card {
+            position: relative;
+            border: 1px solid #c8a06033;
+            background: linear-gradient(135deg, #100e14, #0c0a10);
+            padding: 44px 32px 52px;
+            text-decoration: none;
+            color: inherit;
+            overflow: hidden;
+            transition: border-color 0.4s, transform 0.4s, box-shadow 0.4s;
+            display: block;
+        }
+
+        .gallery-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #c8a060, transparent);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .gallery-card:hover {
+            border-color: #c8a06066;
+            transform: translateY(-5px);
+            box-shadow: 0 24px 60px #c8a06012;
+        }
+
+        .gallery-card:hover::before { opacity: 1; }
+
+        .card-badge {
+            display: inline-block;
+            font-size: 10px;
+            padding: 3px 10px;
+            border: 1px solid #c8a06055;
+            color: #c8a060;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .card-badge.soon {
+            border-color: #8a7a5a44;
+            color: #8a7a5a;
+        }
+
+        .card-number {
+            font-size: 11px;
+            color: #c8a060;
+            letter-spacing: 3px;
+            margin-bottom: 14px;
+        }
+
+        .card-title {
+            font-size: 22px;
+            color: #e8d9b8;
+            margin-bottom: 12px;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: #8a7a5a;
+            line-height: 1.7;
+        }
+
+        .card-arrow {
+            position: absolute;
+            bottom: 28px;
+            right: 28px;
+            color: #c8a06055;
+            font-size: 18px;
+            transition: color 0.3s, transform 0.3s;
+        }
+
+        .gallery-card:hover .card-arrow {
+            color: #c8a060;
+            transform: translateX(5px);
+        }
+
+        .coming-soon {
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        footer {
+            text-align: center;
+            padding: 36px 20px;
+            border-top: 1px solid #c8a06020;
+            font-size: 12px;
+            color: #8a7a5a;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<div class="content">
+    <header>
+        <div class="year-badge">2026학년도</div>
+        <h1>매탄중학교<br>미술작품 전시관</h1>
+        <div class="gold-line"></div>
+        <div class="subtitle">Maetan Middle School · Art Exhibition</div>
+    </header>
+
+    <main>
+        <div class="section-title">— 전 시 관 안 내 —</div>
+
+        <div class="gallery-grid">
+            <a class="gallery-card" href="1학년_전시장 (2).html">
+                <div class="card-badge">OPEN</div>
+                <div class="card-number">01</div>
+                <div class="card-title">1학년 전시관</div>
+                <div class="card-desc">1학년 학생들의 미술 작품을 3D 가상 공간에서 감상하세요.</div>
+                <div class="card-arrow">→</div>
+            </a>
+
+            <a class="gallery-card" href="maetan_gallery.html">
+                <div class="card-badge">OPEN</div>
+                <div class="card-number">02</div>
+                <div class="card-title">매탄 갤러리</div>
+                <div class="card-desc">매탄중학교 대표 갤러리 전시실을 둘러보세요.</div>
+                <div class="card-arrow">→</div>
+            </a>
+
+            <div class="gallery-card coming-soon">
+                <div class="card-badge soon">COMING SOON</div>
+                <div class="card-number">03</div>
+                <div class="card-title">준비 중</div>
+                <div class="card-desc">새로운 전시실이 곧 오픈될 예정입니다.</div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        © 2026 매탄중학교 · Maetan Middle School Art Department
+    </footer>
+</div>
+
+<script>
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const particles = Array.from({ length: 70 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.4 + 0.3,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        alpha: Math.random() * 0.45 + 0.08
+    }));
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(200, 160, 96, ${p.alpha})`;
+            ctx.fill();
+        });
+        requestAnimationFrame(animate);
+    }
+    animate();
+</script>
+
+</body>
+</html>
