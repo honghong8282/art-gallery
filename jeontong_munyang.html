@@ -144,6 +144,8 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
 .credit-rule{width:26px;height:1px;background:var(--accent);opacity:.55}
 .credit-name{font-family:var(--serif);font-weight:700;font-size:1.02rem;letter-spacing:.22em;color:var(--ink)}
 @media (max-width:640px){.credit{position:static;justify-content:flex-end;margin-bottom:8px}}
+.etools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
+.etools .btn{padding:6px 11px;font-size:.88rem}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -266,8 +268,18 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
   <section>
     <div class="compgrid">
       <div>
-        <p class="hint" style="margin:0 0 8px">펼친 면 · 문양을 눌러 고르고 끌어서 옮기세요. 점선이 병의 앞면 가운데예요.</p>
+        <p class="hint" style="margin:0 0 8px">펼친 면 · 문양을 눌러 고르고 끌어서 옮기세요. ⤡ 동그라미는 크기, ↻ 동그라미는 회전이에요. 점선이 병의 앞면 가운데예요.</p>
         <div class="estage"><canvas id="ecv" aria-label="병을 펼친 면"></canvas></div>
+        <div class="etools" id="eTools" hidden>
+          <button class="btn" id="eSmaller" type="button" aria-label="작게">－ 작게</button>
+          <button class="btn" id="eBigger" type="button" aria-label="크게">＋ 크게</button>
+          <button class="btn" id="eRotL" type="button" aria-label="왼쪽으로 돌리기">↺ 15°</button>
+          <button class="btn" id="eRotR" type="button" aria-label="오른쪽으로 돌리기">↻ 15°</button>
+          <button class="btn" id="eFlip" type="button">좌우 뒤집기</button>
+          <button class="btn" id="eDel" type="button">지우기</button>
+          <span class="hint" id="eInfo" style="margin:0"></span>
+        </div>
+        <p class="hint">마우스 휠로 크기, Shift + 휠로 회전, 태블릿에서는 두 손가락으로 벌리거나 돌려도 돼요.</p>
       </div>
       <div>
         <p class="hint" style="margin:0 0 8px">완성 모습 · 끌거나 슬라이더로 돌려 보세요.</p>
@@ -1981,9 +1993,14 @@ function drawEditor(){
   ectx.fillStyle="rgba(60,70,90,.85)"; ectx.font='400 15px "Gowun Dodum",sans-serif'; ectx.textAlign="center";
   ectx.fillText("앞",G.TW/2,18); const rm=G.P.rmax*Math.PI; ectx.fillText("뒤",Math.max(14,G.TW/2-rm+12),18); ectx.fillText("뒤",Math.min(G.TW-14,G.TW/2+rm-12),18);
   if(A.sel>=0&&A.items[A.sel]){ const it=A.items[A.sel], e=itemExtent(it,G), v=it.y*G.TH, cx=it.t==="band"?G.TW/2:G.TW/2+it.x;
-    ectx.strokeStyle="#C0392B"; ectx.lineWidth=2; ectx.setLineDash([5,4]);
-    if(it.t==="band") ectx.strokeRect(2,v-e.h/2,G.TW-4,e.h); else { ectx.save(); ectx.translate(cx,v); ectx.rotate((it.rot||0)*Math.PI/180); ectx.strokeRect(-e.w/2-4,-e.h/2-4,e.w+8,e.h+8); ectx.restore(); }
-    ectx.setLineDash([]); }
+    const k=ecvScale(), H=handlesOf(it,G);
+    ectx.strokeStyle="#C0392B"; ectx.lineWidth=2*k; ectx.setLineDash([5*k,4*k]);
+    if(it.t==="band") ectx.strokeRect(2,v-e.h/2,G.TW-4,e.h); else { ectx.save(); ectx.translate(cx,v); ectx.rotate((it.rot||0)*Math.PI/180); ectx.strokeRect(-e.w/2-4*k,-e.h/2-4*k,e.w+8*k,e.h+8*k); ectx.restore(); }
+    ectx.setLineDash([]);
+    if(H.rot){ ectx.beginPath(); ectx.moveTo(H.top[0],H.top[1]); ectx.lineTo(H.rot[0],H.rot[1]); ectx.stroke(); }
+    [["size",H.size],["rot",H.rot]].forEach(([t,h])=>{ if(!h) return; ectx.beginPath(); ectx.arc(h[0],h[1],9*k,0,TAU); ectx.fillStyle="#fff"; ectx.fill(); ectx.lineWidth=2.5*k; ectx.stroke();
+      ectx.fillStyle="#C0392B"; ectx.font=(t==="rot"?"700 ":"700 ")+Math.round(12*k)+'px sans-serif'; ectx.textAlign="center"; ectx.textBaseline="middle"; ectx.fillText(t==="rot"?"↻":"⤡",h[0],h[1]+.5*k); });
+  }
   ectx.restore();
 }
 let pTimer=0;
@@ -2023,10 +2040,12 @@ $("aSpin").oninput=()=>{ A.spin=+$("aSpin").value; drawPreview(true); };
 $("aSpin").onchange=()=>{ drawPreview(false); aPersist(); };
 
 function syncSel(){
-  const it=A.items[A.sel]; $("aSelBox").hidden=!it; if(!it) return;
+  const it=A.items[A.sel]; $("aSelBox").hidden=!it; $("eTools").hidden=!it; if(!it) return;
+  $("eRotL").hidden=$("eRotR").hidden=it.t==="band"; $("eFlip").hidden=it.t!=="motif";
+  $("eInfo").textContent="크기 "+Math.round(it.size)+(it.t==="band"?"":" · 회전 "+(it.rot||0)+"°");
   const nm=it.t==="text"?"글귀":(MOTIFS.find(m=>m.id===it.motif)||{name:""}).name+(it.t==="band"?" 띠":" 문양");
   $("aSelTitle").textContent="고른 요소 · "+nm;
-  const sz=$("aSize"); sz.min=it.t==="band"?14:it.t==="text"?12:30; sz.max=it.t==="band"?90:it.t==="text"?90:420; sz.value=it.size; $("aSizeO").textContent=Math.round(it.size);
+  const sz=$("aSize"); sz.min=it.t==="band"?14:it.t==="text"?12:30; sz.max=it.t==="band"?110:it.t==="text"?120:520; sz.value=it.size; $("aSizeO").textContent=Math.round(it.size);
   $("aRotRow").hidden=it.t==="band"; $("aRot").value=it.rot||0; $("aRotO").textContent=(it.rot||0)+"°";
   $("aFlip").hidden=it.t!=="motif"; $("aTextRow").hidden=it.t!=="text"; if(it.t==="text") $("aEdit").value=it.text;
 }
@@ -2040,23 +2059,70 @@ $("aFront").onclick=()=>{ const it=A.items[A.sel]; if(!it) return; A.items.splic
 $("aDel").onclick=()=>{ if(A.sel<0) return; A.items.splice(A.sel,1); A.sel=-1; syncSel(); compRefresh(); };
 
 function ePt(e){ const r=ecv.getBoundingClientRect(); return [(e.clientX-r.left)*ecv.width/r.width,(e.clientY-r.top)*ecv.height/r.height]; }
-let eDrag=null;
-ecv.addEventListener("pointerdown",e=>{
-  const G=geom(A.shape), [px,py]=ePt(e); let hit=-1;
+function ecvScale(){ const r=ecv.getBoundingClientRect(); return r.width?ecv.width/r.width:1; }
+const SIZE_LIM={motif:[20,520],band:[12,110],text:[10,120]};
+function clampSize(it,v){ const l=SIZE_LIM[it.t]; return Math.max(l[0],Math.min(l[1],v)); }
+function handlesOf(it,G){
+  const k=ecvScale(), e=itemExtent(it,G), v=it.y*G.TH;
+  if(it.t==="band") return {size:[G.TW/2,v+e.h/2+14*k]};
+  const cx=G.TW/2+it.x, a=(it.rot||0)*Math.PI/180, c=Math.cos(a), s2=Math.sin(a);
+  const tp=(x,y)=>[cx+x*c-y*s2, v+x*s2+y*c];
+  return {size:tp(e.w/2+4*k,e.h/2+4*k), top:tp(0,-e.h/2-4*k), rot:tp(0,-e.h/2-34*k), c:[cx,v]};
+}
+function hitItem(px,py,G){
   for(let i=A.items.length-1;i>=0;i--){ const it=A.items[i], v=it.y*G.TH, ex=itemExtent(it,G);
-    if(it.t==="band"){ if(Math.abs(py-v)<=ex.h/2){ hit=i; break; } continue; }
-    const C=TAU*rvAt(G,v); if([0,-C,C].some(off=>Math.abs(px-(G.TW/2+it.x+off))<=ex.w/2+6&&Math.abs(py-v)<=ex.h/2+6)){ hit=i; break; } }
-  A.sel=hit; syncSel(); drawEditor();
-  if(hit>=0){ eDrag={x:px,y:py}; ecv.setPointerCapture(e.pointerId); e.preventDefault(); }
+    if(it.t==="band"){ if(Math.abs(py-v)<=ex.h/2) return i; continue; }
+    const C=TAU*rvAt(G,v), a=-(it.rot||0)*Math.PI/180;
+    for(const off of [0,-C,C]){ const dx=px-(G.TW/2+it.x+off), dy=py-v, rx=dx*Math.cos(a)-dy*Math.sin(a), ry=dx*Math.sin(a)+dy*Math.cos(a);
+      if(Math.abs(rx)<=ex.w/2+6&&Math.abs(ry)<=ex.h/2+6) return i; } }
+  return -1;
+}
+let eDrag=null; const ePtrs=new Map(); let eGest=null;
+function selItem(){ return A.items[A.sel]; }
+function liveUpdate(){ syncSel(); if(!rq) rq=requestAnimationFrame(()=>{ rq=0; drawEditor(); }); }
+ecv.addEventListener("pointerdown",e=>{
+  const G=geom(A.shape), [px,py]=ePt(e); ePtrs.set(e.pointerId,[px,py]); ecv.setPointerCapture(e.pointerId); e.preventDefault();
+  const it=selItem();
+  if(ePtrs.size===2&&it){ const [p1,p2]=[...ePtrs.values()];
+    eGest={d0:Math.hypot(p2[0]-p1[0],p2[1]-p1[1])||1,a0:Math.atan2(p2[1]-p1[1],p2[0]-p1[0]),size0:it.size,rot0:it.rot||0}; eDrag=null; return; }
+  if(it){ const H=handlesOf(it,G), k=ecvScale(), near=h=>h&&Math.hypot(px-h[0],py-h[1])<=14*k;
+    if(near(H.rot)){ eDrag={mode:"rot",a0:Math.atan2(py-H.c[1],px-H.c[0]),rot0:it.rot||0}; return; }
+    if(near(H.size)){ const c=it.t==="band"?[px,it.y*G.TH]:H.c; eDrag={mode:"size",c,d0:Math.max(1,it.t==="band"?Math.abs(py-c[1]):Math.hypot(px-c[0],py-c[1])),size0:it.size,y0:py}; return; } }
+  const hit=hitItem(px,py,G); A.sel=hit; syncSel(); drawEditor();
+  if(hit>=0) eDrag={mode:"move",x:px,y:py};
 });
 ecv.addEventListener("pointermove",e=>{
-  if(!eDrag) return; const G=geom(A.shape), [px,py]=ePt(e), it=A.items[A.sel]; if(!it) return;
-  it.y=Math.max(0,Math.min(1,it.y+(py-eDrag.y)/G.TH));
-  if(it.t!=="band"){ const C=TAU*rvAt(G,it.y*G.TH); it.x+=px-eDrag.x; it.x=((it.x+C/2)%C+C)%C-C/2; }
-  eDrag={x:px,y:py}; if(!rq) rq=requestAnimationFrame(()=>{ rq=0; drawEditor(); });
+  if(!ePtrs.has(e.pointerId)) return; const G=geom(A.shape), [px,py]=ePt(e); ePtrs.set(e.pointerId,[px,py]); const it=selItem(); if(!it) return;
+  if(eGest&&ePtrs.size>=2){ const [p1,p2]=[...ePtrs.values()], d=Math.hypot(p2[0]-p1[0],p2[1]-p1[1]), a=Math.atan2(p2[1]-p1[1],p2[0]-p1[0]);
+    it.size=Math.round(clampSize(it,eGest.size0*d/eGest.d0)); if(it.t!=="band") it.rot=Math.round(normDeg(eGest.rot0+(a-eGest.a0)*180/Math.PI)); liveUpdate(); return; }
+  if(!eDrag) return;
+  if(eDrag.mode==="move"){
+    it.y=Math.max(0,Math.min(1,it.y+(py-eDrag.y)/G.TH));
+    if(it.t!=="band"){ const C=TAU*rvAt(G,it.y*G.TH); it.x+=px-eDrag.x; it.x=((it.x+C/2)%C+C)%C-C/2; }
+    eDrag.x=px; eDrag.y=py;
+  } else if(eDrag.mode==="size"){
+    const d=it.t==="band"?Math.abs(py-eDrag.c[1]):Math.hypot(px-eDrag.c[0],py-eDrag.c[1]);
+    it.size=Math.round(clampSize(it,eDrag.size0*d/eDrag.d0));
+  } else if(eDrag.mode==="rot"){
+    let r=eDrag.rot0+(Math.atan2(py-it.y*G.TH,px-(G.TW/2+it.x))-eDrag.a0)*180/Math.PI; r=normDeg(r);
+    const sn=Math.round(r/45)*45; if(Math.abs(r-sn)<4) r=sn; it.rot=Math.round(r);
+  }
+  liveUpdate();
 });
-const eEnd=()=>{ if(eDrag){ eDrag=null; compRefresh(); } };
+function normDeg(r){ return ((r+180)%360+360)%360-180; }
+const eEnd=e=>{ ePtrs.delete(e.pointerId); if(ePtrs.size<2) eGest=null; if(ePtrs.size===0&&(eDrag||selItem())){ eDrag=null; compRefresh(); } };
 ecv.addEventListener("pointerup",eEnd); ecv.addEventListener("pointercancel",eEnd);
+ecv.addEventListener("wheel",e=>{ const it=selItem(); if(!it) return; e.preventDefault();
+  if(e.shiftKey&&it.t!=="band") it.rot=normDeg((it.rot||0)+(e.deltaY>0?5:-5));
+  else it.size=Math.round(clampSize(it,it.size*(e.deltaY>0?.93:1.075)));
+  liveUpdate(); clearTimeout(eWheelT); eWheelT=setTimeout(compRefresh,250); },{passive:false});
+let eWheelT=0;
+function tool(fn){ const it=selItem(); if(!it) return; fn(it); syncSel(); compRefresh(); }
+$("eSmaller").onclick=()=>tool(it=>it.size=Math.round(clampSize(it,it.size*.88)));
+$("eBigger").onclick=()=>tool(it=>it.size=Math.round(clampSize(it,it.size*1.14)));
+$("eRotL").onclick=()=>tool(it=>{ if(it.t!=="band") it.rot=normDeg((it.rot||0)-15); });
+$("eRotR").onclick=()=>tool(it=>{ if(it.t!=="band") it.rot=normDeg((it.rot||0)+15); });
+$("eFlip").onclick=()=>$("aFlip").click(); $("eDel").onclick=()=>$("aDel").click();
 let pDragX=null;
 pcv.addEventListener("pointerdown",e=>{ pDragX=e.clientX; pcv.setPointerCapture(e.pointerId); });
 pcv.addEventListener("pointermove",e=>{ if(pDragX===null) return; const r=pcv.getBoundingClientRect(); A.spin=(((A.spin||0)-(e.clientX-pDragX)*360/r.width*.9)%360+360)%360; pDragX=e.clientX; $("aSpin").value=Math.round(A.spin); if(!rq) rq=requestAnimationFrame(()=>{ rq=0; drawPreview(true); }); });
