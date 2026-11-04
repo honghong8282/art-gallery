@@ -36,7 +36,7 @@
 [hidden]{display:none!important}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all}
-button,input{font:inherit;color:inherit}
+button,input{font:inherit;color:inherit;transition:border-color .18s,background-color .18s,color .15s,box-shadow .18s,filter .18s;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 
 .top{max-width:1180px;margin:0 auto;padding:28px 20px 8px}
@@ -59,12 +59,13 @@ button,input{font:inherit;color:inherit}
 .info b{color:var(--ink);font-weight:400;font-family:var(--serif)}
 
 .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
-.btn{border:1px solid var(--line);background:var(--panel);padding:9px 16px;border-radius:6px;cursor:pointer}
+.btn{border:1px solid var(--line);background:var(--panel);padding:9px 16px;border-radius:6px;cursor:pointer;box-shadow:0 1px 4px var(--shadow);}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.btn:hover{border-color:var(--accent)}
+.btn:hover{border-color:var(--accent);background:var(--accent-soft);}
+.btn.primary:hover{filter:brightness(1.1);background:var(--accent);}
 #status{color:var(--muted);font-size:.9rem}
 
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 18px 18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 18px 18px;box-shadow:0 2px 16px var(--shadow);}
 @media (min-width:881px){.panel{position:sticky;top:calc(16px + env(safe-area-inset-top,0px));max-height:calc(100vh - 32px);overflow:auto}}
 fieldset{border:0;margin:0;padding:16px 0 4px;border-bottom:1px solid var(--line)}
 fieldset:last-child{border-bottom:0}
@@ -76,12 +77,14 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
 .motif{border:1px solid var(--line);background:transparent;border-radius:6px;padding:6px 4px 4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.82rem;color:var(--muted)}
 .motif canvas{width:100%;max-width:64px;aspect-ratio:1/1;height:auto;border-radius:3px}
 .motif[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent);color:var(--ink)}
+.motif:hover:not([aria-pressed="true"]):not(.draw){border-color:var(--accent);background:var(--accent-soft);}
 .motif.draw{justify-content:center;font-size:.85rem;color:var(--accent);border-style:dashed}
 .motif.draw span.plus{font-size:1.6rem;line-height:1}
 
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1px solid var(--line);background:transparent;border-radius:999px;padding:5px 12px;cursor:pointer;font-size:.9rem}
 .chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.chip:hover:not([aria-pressed="true"]){background:var(--accent-soft);border-color:var(--accent);}
 
 .slider{display:grid;grid-template-columns:1fr auto;gap:2px 10px;margin-bottom:12px;font-size:.92rem}
 .slider output{color:var(--muted);font-variant-numeric:tabular-nums}
@@ -92,6 +95,7 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
 .swatch i{display:inline-flex;width:22px;height:22px;border-radius:50%;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
 .swatch i em{flex:1}
 .swatch[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.swatch:hover:not([aria-pressed="true"]){border-color:var(--accent);}
 .custom-colors{display:flex;gap:16px;margin-top:10px;font-size:.9rem}
 .custom-colors label{display:flex;align-items:center;gap:6px}
 .custom-colors input{width:38px;height:30px;border:1px solid var(--line);border-radius:4px;padding:0;background:none}
@@ -146,12 +150,48 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
 @media (max-width:640px){.credit{position:static;justify-content:flex-end;margin-bottom:8px}}
 .etools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
 .etools .btn{padding:6px 11px;font-size:.88rem}
+@media (max-width:880px){
+  .layout{gap:14px}
+  .layout>section{display:contents}
+  .layout>aside{order:5}
+  .layout>section>.info{order:10}
+  #compMode>section>.actions{order:6}
+}
+@media (max-width:640px){
+  .top{padding:16px 14px 0}
+  .top h1{font-size:1.5rem}
+  .top p{font-size:.92rem}
+  .modetabs{position:fixed;bottom:0;left:0;right:0;top:auto;z-index:20;background:var(--panel);border-top:1px solid var(--line);border-bottom:none;box-shadow:0 -2px 20px var(--shadow);padding-bottom:env(safe-area-inset-bottom,0px);margin:0;display:flex;overflow-x:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  .modetabs::-webkit-scrollbar{display:none}
+  .modetabs button{flex:1;min-width:0;padding:10px 2px 8px;font-size:.68rem;border-top:3px solid transparent;border-bottom:none;margin-bottom:0;min-height:52px;letter-spacing:-.01em;}
+  .modetabs button[aria-pressed="true"]{border-top-color:var(--accent);border-bottom-color:transparent;color:var(--ink);font-weight:700;}
+  .layout{padding:12px 12px calc(72px + env(safe-area-inset-bottom,0px)) 12px}
+  .panel{padding:2px 14px 14px;border-radius:10px;box-shadow:none;}
+  .stage,.tstage,.cstage,.estage{padding:8px;border-radius:8px}
+  .btn{min-height:44px}
+  .chip{min-height:38px;padding:6px 13px}
+  .actions .btn{flex:1 1 calc(50% - 10px)}
+  .etools .btn{flex:1 1 calc(33% - 6px);min-height:42px}
+  .motif-grid{gap:6px}
+  .motif{font-size:.76rem;padding:5px 2px 3px}
+  .slider input,.spin input{height:30px}
+  .spin{width:100%}.spin input{flex:1;width:auto}
+  .info h2{font-size:1.1rem}
+  .field input,.field textarea{font-size:16px}
+  .viewtabs button{flex:1 1 auto}
+  .bottlectl{gap:8px}
+  .compgrid{gap:12px}
+}
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pg{position:relative;border:1px solid var(--line);border-radius:6px;padding:6px 4px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.76rem;color:var(--muted)}
+.pg canvas{width:100%;max-width:64px;aspect-ratio:1/1;height:auto;border-radius:3px}
+.pg-del{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;line-height:1;font-size:15px;padding:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <header class="top">
-  <div class="credit" aria-label="made by 홍인"><span class="credit-label">MADE BY</span><span class="credit-rule" aria-hidden="true"></span><span class="credit-name">홍인</span></div>
+  <div class="credit" aria-label="made by 홍인"><span class="credit-label">MADE BY</span><span class="credit-rule" aria-hidden="true"></span><span class="credit-name">Hong</span></div>
   <h1>전통문양 도안 만들기</h1>
   <p id="subtitle"></p>
   <nav class="modetabs" aria-label="작업 고르기">
@@ -223,10 +263,14 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
       <canvas id="tcv" hidden aria-label="선 도안 결과"></canvas>
     </div>
     <div class="actions">
-      <button class="btn primary" id="tUse" type="button" hidden>이 도안을 패턴 문양으로 쓰기</button>
+      <button class="btn primary" id="tUse" type="button" hidden>이 도안을 내 문양에 추가</button>
       <button class="btn" id="tOrig" type="button" aria-pressed="false" hidden>원본 보기</button>
       <button class="btn" id="tDl" type="button" hidden>그림 파일로 저장</button>
       <span id="tStatus" role="status"></span>
+    </div>
+    <div class="actions" id="tAfter" hidden>
+      <button class="btn primary" id="tToComp" type="button">병 작품에 넣기</button>
+      <button class="btn" id="tToPattern" type="button">무늬 배열에서 쓰기</button>
     </div>
     <div class="info">
       <h2>이렇게 써 보세요</h2>
@@ -242,7 +286,15 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
       <legend>사진 넣기</legend>
       <button class="btn" id="tPick" type="button">사진 고르기</button>
       <input type="file" id="tFile" accept="image/*" hidden>
-      <p class="hint">사진을 왼쪽 칸에 끌어다 놓거나 붙여 넣어도 돼요.</p>
+      <button class="btn" id="tPaste" type="button" hidden>복사한 사진 붙여넣기</button>
+      <label class="field" style="margin-top:12px">인터넷 사진 주소
+        <span style="display:flex;gap:6px;margin-top:4px"><input id="tUrl" type="url" inputmode="url" placeholder="https://… .jpg" style="margin:0;flex:1"><button class="btn" id="tUrlGo" type="button">가져오기</button></span></label>
+      <p class="hint">인터넷 사진은 사진 위에서 마우스 오른쪽 → 이미지 복사를 한 뒤 붙여넣기 버튼이나 Ctrl + V를 누르는 방법이 가장 잘 돼요. 휴대폰에서는 사진을 길게 눌러 저장한 뒤 사진 고르기로 넣어 주세요. 다른 사람이 만든 사진은 수업 작품에만 쓰고 출처를 함께 적어 주세요.</p>
+    </fieldset>
+    <fieldset id="tGalleryBox" hidden>
+      <legend>내 사진 도안</legend>
+      <div class="pgrid" id="tGallery"></div>
+      <p class="hint">여기 모인 도안은 무늬 배열하기, 병 작품 꾸미기, 진로 문양 카드에서 모두 쓸 수 있어요. 최대 12개까지 보관돼요.</p>
     </fieldset>
     <fieldset>
       <legend>표현 방식</legend>
@@ -288,7 +340,9 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
       </div>
     </div>
     <div class="actions">
-      <button class="btn primary" id="aDl3d" type="button" hidden>완성 모습 저장</button>
+      <button class="btn primary" id="aDlCard" type="button" hidden>작품 이미지 저장</button>
+      <button class="btn primary" id="aShare" type="button" hidden>작품 공유하기</button>
+      <button class="btn" id="aDl3d" type="button" hidden>완성 모습만 저장</button>
       <button class="btn" id="aDlFlat" type="button" hidden>펼친 도안 저장</button>
       <button class="btn" id="aReset" type="button">예시로 다시 시작</button>
       <button class="btn" id="aClear" type="button">모두 지우기</button>
@@ -327,6 +381,13 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
         <button class="btn" id="aFront" type="button">맨 앞으로</button>
         <button class="btn" id="aDel" type="button">지우기</button>
       </div>
+    </fieldset>
+    <fieldset>
+      <legend>작품 정보</legend>
+      <label class="field">작품 제목<input id="aTitle" maxlength="30" placeholder="예: 물살을 거슬러 오르는 꿈"></label>
+      <label class="field">이름<input id="aName" maxlength="24" placeholder="예: 1학년 3반 김OO"></label>
+      <label class="field">작품 설명<textarea id="aDesc" rows="2" maxlength="80" placeholder="어떤 꿈과 뜻을 담았는지 적어 보세요."></textarea></label>
+      <p class="hint" style="margin-top:0">작품 이미지 저장을 누르면 앞·옆·뒷모습과 이 글이 한 장에 담겨요. 패들렛에 올리기 좋아요.</p>
     </fieldset>
   </aside>
 </main>
@@ -1180,11 +1241,103 @@ BUILDERS.koi=function(){
   ]};
 };
 
+Object.assign(BUILDERS,{
+  hexagonal(){
+    const p=new Path2D(),R=42,r=24;
+    for(let k=0;k<6;k++){const a=k*TAU/6-Math.PI/6,a2=(k+1)*TAU/6-Math.PI/6;
+      p.moveTo(Math.cos(a)*R,Math.sin(a)*R); p.lineTo(Math.cos(a2)*R,Math.sin(a2)*R);
+      p.moveTo(Math.cos(a)*r,Math.sin(a)*r); p.lineTo(Math.cos(a2)*r,Math.sin(a2)*r);
+      p.moveTo(Math.cos(a)*r,Math.sin(a)*r); p.lineTo(Math.cos(a)*R,Math.sin(a)*R);}
+    for(let k=0;k<6;k++){const a=k*TAU/6;
+      p.moveTo(Math.cos(a)*12+5.5,Math.sin(a)*12); p.arc(Math.cos(a)*12,Math.sin(a)*12,5.5,0,TAU);}
+    p.moveTo(8,0); p.arc(0,0,8,0,TAU);
+    return {fills:[circle(0,0,8)],strokes:[p]};
+  },
+  bosanghwa(){
+    const outer=[],inner=[],f=new Path2D(),c=circle(0,0,8),dots=new Path2D();
+    for(let k=0;k<8;k++){const a=k*TAU/8;
+      outer.push(ell(Math.cos(a)*30,Math.sin(a)*30,13,7,a));
+      f.moveTo(Math.cos(a)*17,Math.sin(a)*17); f.lineTo(Math.cos(a)*37,Math.sin(a)*37);}
+    for(let k=0;k<8;k++){const a=k*TAU/8+TAU/16;
+      inner.push(ell(Math.cos(a)*16,Math.sin(a)*16,9,5,a));}
+    for(let k=0;k<8;k++){const a=k*TAU/8;
+      dots.moveTo(Math.cos(a)*8+2.2,Math.sin(a)*8); dots.arc(Math.cos(a)*8,Math.sin(a)*8,2.2,0,TAU);}
+    return {layers:[{occlude:outer,fills:outer,strokes:outer,fine:[f]},{occlude:inner,fills:inner,strokes:inner},{occlude:[c],fills:[c],strokes:[c],solid:[dots]}]};
+  },
+  yeouidu(){
+    const body=new Path2D();
+    body.moveTo(0,36); body.bezierCurveTo(-28,36,-40,16,-40,-2); body.bezierCurveTo(-40,-32,-18,-46,0,-46);
+    body.bezierCurveTo(18,-46,40,-32,40,-2); body.bezierCurveTo(40,16,28,36,0,36); body.closePath();
+    const inner=new Path2D(); inner.addPath(body,new DOMMatrix().scale(.62).translate(0,2));
+    const sp=new Path2D();
+    spiral(sp,0,-4,24,1.3,Math.PI*.3,1); spiral(sp,0,-4,24,1.3,Math.PI*1.3,1); spiral(sp,0,-4,14,1.1,-Math.PI*.3,1);
+    const dec=new Path2D();
+    dec.moveTo(-18,30); dec.bezierCurveTo(-28,22,-32,10,-26,2); spiralFrom(dec,-26,2,7,1.1,0,1);
+    dec.moveTo(18,30); dec.bezierCurveTo(28,22,32,10,26,2); spiralFrom(dec,26,2,7,1.1,Math.PI,1);
+    return {fills:[body],strokes:[body],fine:[inner,sp,dec]};
+  },
+  phoenix(){
+    const t1=new Path2D(); t1.moveTo(-6,10); t1.bezierCurveTo(-16,22,-30,18,-36,38); t1.bezierCurveTo(-34,48,-28,50,-22,44); t1.bezierCurveTo(-14,36,-12,22,-6,10); t1.closePath();
+    const t2=new Path2D(); t2.moveTo(-2,12); t2.bezierCurveTo(-6,28,-18,42,-12,52); t2.bezierCurveTo(-8,56,-2,54,0,48); t2.bezierCurveTo(4,38,2,22,-2,12); t2.closePath();
+    const t3=new Path2D(); t3.moveTo(4,10); t3.bezierCurveTo(14,22,18,38,24,48); t3.bezierCurveTo(28,54,34,52,34,46); t3.bezierCurveTo(32,34,20,20,4,10); t3.closePath();
+    const fdet=new Path2D();
+    [[-32,14,-36,24],[-28,16,-30,28],[-24,18,-22,30],[0,14,-2,24],[-4,14,-4,26],[4,14,8,24],[8,14,14,24],[12,14,18,22]].forEach(([x1,y1,x2,y2])=>{fdet.moveTo(x1,y1); fdet.lineTo(x2,y2);});
+    const body=ell(-2,2,20,9,-.1);
+    const wing=new Path2D(); wing.moveTo(-10,-2); wing.bezierCurveTo(-18,-20,-30,-36,-46,-40); wing.lineTo(-40,-34); wing.lineTo(-46,-30); wing.lineTo(-38,-26); wing.bezierCurveTo(-24,-16,-14,-6,2,2); wing.closePath();
+    const neck=tubeC([10,0],[18,-4],[24,-10],[30,-18],3,2), head=circle(32,-19,5);
+    const crown=new Path2D(); crown.moveTo(30,-23); crown.bezierCurveTo(24,-32,20,-36,22,-32); crown.moveTo(32,-23); crown.bezierCurveTo(30,-34,28,-38,30,-34); crown.moveTo(34,-23); crown.bezierCurveTo(36,-34,36,-38,36,-34);
+    const beak=new Path2D(); beak.moveTo(36,-20); beak.lineTo(46,-15); beak.lineTo(36,-17); beak.closePath();
+    const wingFeath=new Path2D(); for(let k=0;k<6;k++){const t=k/5,x=-12-t*26,y=-4-t*26; wingFeath.moveTo(x,y); wingFeath.quadraticCurveTo(x-4,y+4,x-6,y+10-t*4);}
+    const eye=scaleDots([[34,-19]],1.6);
+    return {layers:[{fills:[t1,t2,t3],strokes:[t1,t2,t3],fine:[fdet]},{occlude:[body,wing],fills:[body,wing,head],strokes:[body,neck,head,wing,beak,crown],fine:[wingFeath],solid:[eye]}]};
+  },
+  taeguk(){
+    const R=44;
+    const sec=k=>{
+      const a0=k*TAU/3-Math.PI/2, a1=(k+1)*TAU/3-Math.PI/2, p=new Path2D();
+      p.moveTo(0,0); p.arc(0,0,R,a0,a1,false);
+      const ex=R*Math.cos(a1), ey=R*Math.sin(a1), ma=(a0+a1)/2+Math.PI;
+      const mx=R*Math.cos(ma)*.52, my=R*Math.sin(ma)*.52;
+      p.bezierCurveTo(ex*.48+mx*.35,ey*.48+my*.35,mx*.82,my*.82,0,0); p.closePath(); return p;};
+    const s0=sec(0),s1=sec(1),s2=sec(2),outer=circle(0,0,R),inner=circle(0,0,R*.34);
+    const dots=new Path2D();
+    for(let k=0;k<3;k++){const a=k*TAU/3-Math.PI/2+TAU/6, r=R*.58;
+      dots.moveTo(Math.cos(a)*r+5,Math.sin(a)*r); dots.arc(Math.cos(a)*r,Math.sin(a)*r,5,0,TAU);}
+    return {fills:[s0],strokes:[outer,s0,s1,s2,inner],solid:[dots]};
+  },
+  manja(){
+    const L=44,w=11,p=new Path2D();
+    p.moveTo(-w/2,-L); p.lineTo(-w/2,-w/2); p.lineTo(-L,-w/2); p.lineTo(-L,w/2); p.lineTo(-w/2,w/2); p.lineTo(-w/2,L);
+    p.lineTo(w/2,L); p.lineTo(w/2,w/2); p.lineTo(L,w/2); p.lineTo(L,-w/2); p.lineTo(w/2,-w/2); p.lineTo(w/2,-L); p.closePath();
+    const dots=new Path2D();
+    [[L+6,0],[0,L+6],[-L-6,0],[0,-L-6]].forEach(([x,y])=>{dots.moveTo(x+4.5,y); dots.arc(x,y,4.5,0,TAU);});
+    return {fills:[p],strokes:[p],solid:[dots]};
+  },
+  neunghwa(){
+    const outer=new Path2D();
+    outer.moveTo(0,-46); outer.bezierCurveTo(20,-22,22,-20,46,0); outer.bezierCurveTo(22,20,20,22,0,46);
+    outer.bezierCurveTo(-20,22,-22,20,-46,0); outer.bezierCurveTo(-22,-20,-20,-22,0,-46); outer.closePath();
+    const inner=new Path2D();
+    inner.moveTo(0,-28); inner.bezierCurveTo(12,-12,12,-12,28,0); inner.bezierCurveTo(12,12,12,12,0,28);
+    inner.bezierCurveTo(-12,12,-12,12,-28,0); inner.bezierCurveTo(-12,-12,-12,-12,0,-28); inner.closePath();
+    const petals=[[0,-46],[46,0],[0,46],[-46,0]].map(([x,y])=>circle(x,y,7.5));
+    const c=circle(0,0,9), fine=new Path2D();
+    for(let k=0;k<8;k++){const a=k*TAU/8; fine.moveTo(Math.cos(a)*9,Math.sin(a)*9); fine.lineTo(Math.cos(a)*26,Math.sin(a)*26);}
+    return {fills:[...petals,c],strokes:[outer,inner,...petals,c],fine:[fine]};
+  }
+});
+
 const MOTIFS = [
   {id:"flowers", g:"전통 무늬", name:"초화", meaning:"풀과 꽃이 덩굴처럼 이어지는 무늬로, 끊임없이 피고 지는 생명력과 자연의 순환을 나타내요."},
   {id:"vine", g:"전통 무늬", name:"당초", meaning:"덩굴이 끊임없이 뻗어 나가는 모양으로, 이어지는 생명력과 장수를 바라는 마음을 담았어요."},
   {id:"meander", g:"전통 무늬", name:"번개", meaning:"각진 선이 끝없이 감겨 들어가는 뇌문으로, 영원히 이어짐을 나타내며 도자기의 띠 장식에 많이 쓰였어요."},
   {id:"wave", g:"전통 무늬", name:"물결", meaning:"겹겹이 밀려오는 물결을 비늘처럼 겹쳐 그린 무늬로, 바다와 끝없는 흐름을 나타냅니다."},
+  {id:"hexagonal", g:"기하 무늬", name:"귀갑", meaning:"거북의 등껍질을 본뜬 육각형 무늬로, 장수와 견고함을 상징합니다. 도자기와 목공예품에 띠 장식으로 자주 쓰였어요."},
+  {id:"bosanghwa", g:"기하 무늬", name:"보상화", meaning:"불교 미술에서 온 장식 꽃무늬로, 연꽃·모란·국화를 모아 이상화한 꽃입니다. 고려청자와 불교 공예품에 많이 쓰였어요."},
+  {id:"yeouidu", g:"기하 무늬", name:"여의두", meaning:"여의(如意) 머리 모양을 본뜬 구름 형태의 무늬로, 뜻하는 바를 이루기를 바라는 길상 무늬입니다. 도자기와 자수에 즐겨 쓰였어요."},
+  {id:"neunghwa", g:"기하 무늬", name:"능화", meaning:"마름꽃 모양의 기하 무늬로, 책 표지나 보자기에 찍는 능화판 문양으로 많이 쓰였어요. 단순한 형태 안에 꽃의 아름다움을 담았어요."},
+  {id:"taeguk", g:"기하 무늬", name:"태극", meaning:"음과 양, 세 힘의 조화를 나타내는 삼태극 무늬입니다. 하늘·땅·사람을 상징하며 태극기의 원형이기도 해요."},
+  {id:"manja", g:"기하 무늬", name:"만자", meaning:"불교에서 온 길상(吉祥) 무늬로, 행복·장수·만덕을 뜻합니다. 사찰 건물과 공예품의 띠 장식에 반복 무늬로 많이 쓰였어요."},
   {id:"sun", g:"십장생", name:"해", meaning:"만물을 살리는 생명의 근원으로 십장생의 으뜸입니다. 일월오봉도에서는 왕을 상징해요."},
   {id:"mountain", g:"십장생", name:"산", meaning:"언제나 그 자리에 있는 굳건함과 영원함을 뜻합니다. 일월오봉도의 다섯 봉우리가 대표적이에요."},
   {id:"cloud", g:"십장생", name:"구름", meaning:"하늘과 신선의 세계를 뜻하며, 오래 사는 것을 바라는 십장생 가운데 하나입니다."},
@@ -1202,6 +1355,7 @@ const MOTIFS = [
   {id:"lotus", g:"길상", name:"연꽃", meaning:"진흙 속에서도 깨끗하게 피어나 청렴과 고결함을 상징합니다. 불교 미술과 청자·백자에 자주 쓰였어요."},
   {id:"dragon", g:"길상", name:"용", meaning:"비와 바람을 다스리는 상상의 동물로 왕의 권위와 이끄는 힘을 상징합니다. 여의주는 뜻을 이루는 구슬이에요."},
   {id:"snake", g:"길상", name:"뱀", meaning:"허물을 벗고 새로 태어나 재생과 치유, 지혜를 상징합니다. 우리 민속에서는 집과 재물을 지키는 업신으로 여기기도 했어요."},
+  {id:"phoenix", g:"길상", name:"봉황", meaning:"성천자가 나타날 때 하늘을 나는 상상의 새로, 태평성대와 뛰어난 덕을 상징합니다. 용과 함께 궁궐 장식과 왕비 복식에 많이 쓰였어요."},
   {id:"bat", g:"길상", name:"박쥐", meaning:"박쥐 복(蝠) 자가 복 복(福) 자와 소리가 같아 복을 부르는 무늬로 가구 장식이나 베갯모에 많이 쓰였어요."},
   {id:"su", g:"문자문", name:"壽 수", meaning:"목숨 수(壽). 오래 건강하게 살기를 바라는 글자로, 그릇·베갯모·옷감에 무늬처럼 새겼어요."},
   {id:"bok", g:"문자문", name:"福 복", meaning:"복 복(福). 삶에 좋은 일이 가득하기를 바라는 글자입니다."},
@@ -1239,8 +1393,9 @@ if(S.motif==="custom" && !(S.custom&&S.custom.length)) S.motif="lotus";
 function persist(){ try{ localStorage.setItem("pattern-maker-v1", JSON.stringify(S)); }catch(e){} }
 
 const cache = {};
-let photoCanvas=null;
-function getMotif(id){ if(id==="photo") return photoCanvas?{raster:photoCanvas}:{fills:[],strokes:[]}; if(id==="custom") return BUILDERS.custom(); return cache[id] || (cache[id]=BUILDERS[id]()); }
+let photoCanvas=null, libVersion=0, photoLib=[];
+function getMotif(id){ if(id==="photo") return photoCanvas?{raster:photoCanvas}:{fills:[],strokes:[]};
+  if(id.startsWith("photo-")){ const p=photoLib.find(q=>q.id===id); return p&&p.c?{raster:p.c}:{fills:[],strokes:[]}; } if(id==="custom") return BUILDERS.custom(); return cache[id] || (cache[id]=BUILDERS[id]()); }
 function palette(){ return PALETTES.find(p=>p.id===S.palette)||PALETTES[0]; }
 function inks(){ const p=palette(); return p.ink || [S.ink]; }
 function bgColor(){ const p=palette(); return p.bg || S.bg; }
@@ -1409,7 +1564,7 @@ function bottleTexture(P,d,src){
   return (texCaches[src.id]={key,data:x.getImageData(0,0,c.width,c.height).data,w:c.width,h:c.height,TW,TH,d});
 }
 function renderBottle3D(){
-  renderBottleOn(ctx,S.shape,S.spin,fastRender,{id:"pat",key:JSON.stringify([S.motif,S.arr,S.size,S.gap,S.rot,S.lw,S.count,S.palette,S.ink,S.bg,S.fill,S.custom.length,S.shape,!!photoCanvas]),draw:drawPattern});
+  renderBottleOn(ctx,S.shape,S.spin,fastRender,{id:"pat",key:JSON.stringify([S.motif,S.arr,S.size,S.gap,S.rot,S.lw,S.count,S.palette,S.ink,S.bg,S.fill,S.shape,libVersion]),draw:drawPattern});
 }
 function renderBottleOn(c2,shapeId,spin,fast,src){
   const SH=SHAPES[shapeId]||SHAPES.maebyeong, BGP=hexRgb(bgColor()).map(c=>c*.98);
@@ -1553,7 +1708,7 @@ let downloads=null;
 (async()=>{
   try{ if(window.claude && typeof window.claude.use==="function"){ downloads=await window.claude.use("downloads"); } }catch(e){ downloads=null; }
   if(!downloads){ downloads={ save:async({filename,data})=>{ const url=URL.createObjectURL(data), a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),4000); } }; }
-  $("dl").hidden=!downloads; $("aDl3d").hidden=$("aDlFlat").hidden=!downloads; if(tMask) $("tDl").hidden=!downloads; $("cDl").hidden=!downloads;
+  $("dl").hidden=!downloads; $("aDl3d").hidden=$("aDlFlat").hidden=$("aDlCard").hidden=!downloads; if(tMask) $("tDl").hidden=!downloads; $("cDl").hidden=!downloads;
 })();
 $("dl").onclick=()=>{
   if(!downloads) return;
@@ -1601,7 +1756,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !$("padWrap").hi
 $("padUse").onclick=()=>{
   if(!strokes.length){ closePad(); return; }
   S.custom=strokes.map(s=>s.map(p=>[Math.round(p[0]*10)/10,Math.round(p[1]*10)/10]));
-  S.motif="custom"; S.fill=S.fill; buildMotifs(); render(); persist(); closePad();
+  S.motif="custom"; libVersion++; buildMotifs(); render(); persist(); closePad();
 };
 
 
@@ -1738,15 +1893,37 @@ function tSet(im){
   for(let i=0,j=0;i<gray.length;i++,j+=4) gray[i]=.299*d[j]+.587*d[j+1]+.114*d[j+2];
   tOrig=false; $("tOrig").setAttribute("aria-pressed","false"); $("tOrig").textContent="원본 보기";
   $("tempty").hidden=true; $("tcv").hidden=false; $("tUse").hidden=false; $("tOrig").hidden=false; $("tDl").hidden=!downloads;
-  tStatus(""); tProcess();
+  tStatus(""); $("tAfter").hidden=true; tProcess();
 }
 $("tPick").onclick=$("tPick2").onclick=()=>$("tFile").click();
 $("tFile").onchange=()=>{ tLoad($("tFile").files[0]); $("tFile").value=""; };
 const tst=$("tstage");
 tst.addEventListener("dragover",e=>{ e.preventDefault(); tst.classList.add("drag"); });
 tst.addEventListener("dragleave",()=>tst.classList.remove("drag"));
-tst.addEventListener("drop",e=>{ e.preventDefault(); tst.classList.remove("drag"); tLoad(e.dataTransfer.files[0]); });
-document.addEventListener("paste",e=>{ if(mode!=="trace") return; const it=[...(e.clipboardData?e.clipboardData.items:[])].find(i=>i.type.startsWith("image/")); if(it) tLoad(it.getAsFile()); });
+tst.addEventListener("drop",e=>{ e.preventDefault(); tst.classList.remove("drag"); const f=e.dataTransfer.files[0]; if(f){ tLoad(f); return; }
+  const u=(e.dataTransfer.getData("text/uri-list")||e.dataTransfer.getData("text/plain")||"").split("\n")[0].trim(); if(u) { $("tUrl").value=u; tLoadUrl(u); } });
+document.addEventListener("paste",e=>{ if(mode!=="trace") return; const items=[...(e.clipboardData?e.clipboardData.items:[])];
+  const it=items.find(i=>i.type.startsWith("image/")); if(it){ e.preventDefault(); tLoad(it.getAsFile()); return; }
+  const txt=e.clipboardData&&e.clipboardData.getData("text"); if(txt&&/^https?:\/\//i.test(txt.trim())&&e.target!==$("tUrl")){ e.preventDefault(); $("tUrl").value=txt.trim(); tLoadUrl(txt.trim()); } });
+function tLoadUrl(url){
+  if(!/^https?:\/\//i.test(url)){ tStatus("https:// 로 시작하는 사진 주소를 넣어 주세요."); return; }
+  tStatus("사진을 가져오는 중이에요…");
+  const fail=()=>tStatus("이 사이트의 사진은 바로 가져올 수 없어요. 사진에서 마우스 오른쪽 → 이미지 복사를 한 뒤 붙여넣기 버튼을 눌러 주세요.");
+  const im=new Image(); im.crossOrigin="anonymous";
+  im.onload=()=>{ try{ tSet(im); tStatus(""); }catch(e){ fail(); } };
+  im.onerror=()=>{ fetch(url,{mode:"cors"}).then(r=>{ if(!r.ok) throw 0; return r.blob(); }).then(b=>{ if(!/^image\//.test(b.type)) throw 0; tLoad(new File([b],"web",{type:b.type})); }).catch(fail); };
+  im.src=url;
+}
+$("tUrlGo").onclick=()=>tLoadUrl($("tUrl").value.trim());
+$("tUrl").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); tLoadUrl($("tUrl").value.trim()); } });
+if(navigator.clipboard&&navigator.clipboard.read) $("tPaste").hidden=false;
+$("tPaste").onclick=async()=>{
+  try{ const items=await navigator.clipboard.read();
+    for(const item of items){ const ty=item.types.find(t=>t.startsWith("image/")); if(ty){ const b=await item.getType(ty); tLoad(new File([b],"paste",{type:ty})); return; } }
+    for(const item of items){ if(item.types.includes("text/plain")){ const t=(await (await item.getType("text/plain")).text()).trim(); if(/^https?:\/\//i.test(t)){ $("tUrl").value=t; tLoadUrl(t); return; } } }
+    tStatus("복사한 사진이 없어요. 사진에서 이미지 복사를 먼저 해 주세요.");
+  }catch(e){ tStatus("붙여넣기를 할 수 없어요. 키보드로 Ctrl + V를 눌러 보세요."); }
+};
 $("tOrig").onclick=()=>{ tOrig=!tOrig; $("tOrig").setAttribute("aria-pressed",String(tOrig)); $("tOrig").textContent=tOrig?"도안 보기":"원본 보기"; tDraw(); };
 
 function buildTModes(){
@@ -1776,25 +1953,52 @@ function syncT(){
   Object.keys(TSL).forEach(id=>{ $(id).value=T[TSL[id]]; $(id+"O").textContent=T[TSL[id]]; });
 }
 
-function setPhotoFromMask(){
+const PHOTO_KEY="pattern-photos-v1", PHOTO_MAX=12;
+function maskToCanvas(){
   let x0=tw,y0=th,x1=-1,y1=-1;
   for(let y=0;y<th;y++) for(let x=0;x<tw;x++) if(tMask[y*tw+x]>.1){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
-  if(x1<0) return false;
-  const cw=x1-x0+1, ch=y1-y0+1, sc=Math.min(1,420/Math.max(cw,ch));
+  if(x1<0) return null;
+  const cw=x1-x0+1, ch=y1-y0+1, sc=Math.min(1,380/Math.max(cw,ch));
   const full=document.createElement("canvas"); full.width=cw; full.height=ch;
   const fx=full.getContext("2d"), im=fx.createImageData(cw,ch);
-  for(let y=0;y<ch;y++) for(let x=0;x<cw;x++){ const a=tMask[(y+y0)*tw+x+x0]; im.data[(y*cw+x)*4+3]=a*255; }
+  for(let y=0;y<ch;y++) for(let x=0;x<cw;x++){ const a=Math.min(1,tMask[(y+y0)*tw+x+x0]*1.35); im.data[(y*cw+x)*4+3]=a*255; }
   fx.putImageData(im,0,0);
   const c=document.createElement("canvas"); c.width=Math.max(1,Math.round(cw*sc)); c.height=Math.max(1,Math.round(ch*sc));
-  c.getContext("2d").drawImage(full,0,0,c.width,c.height);
-  photoCanvas=c;
-  try{ localStorage.setItem("pattern-photo-v1",c.toDataURL("image/png")); }catch(e){}
-  return true;
+  c.getContext("2d").drawImage(full,0,0,c.width,c.height); return c;
 }
+function savePhotoLib(){
+  while(true){ try{ localStorage.setItem(PHOTO_KEY,JSON.stringify(photoLib.map(p=>({id:p.id,url:p.url})))); return true; }
+    catch(e){ if(photoLib.length<=1) return false; photoLib.shift(); } }
+}
+function syncPhotoMotifs(){
+  for(let i=MOTIFS.length-1;i>=0;i--) if(MOTIFS[i].id.startsWith("photo")) MOTIFS.splice(i,1);
+  const ci=MOTIFS.findIndex(m=>m.id==="custom");
+  photoLib.forEach((p,k)=>MOTIFS.splice(ci+k,0,{id:p.id,g:"내 문양",name:"사진 도안 "+(k+1),meaning:"사진이나 그림을 도안으로 바꾼 문양입니다. 원래 사진에서 무엇을 살리고 무엇을 덜어냈는지 비교해 보세요."}));
+  photoCanvas=photoLib.length?photoLib[photoLib.length-1].c:null; libVersion++;
+  if(S.motif==="photo"||(S.motif.startsWith("photo-")&&!photoLib.some(p=>p.id===S.motif))) S.motif=photoLib.length?photoLib[photoLib.length-1].id:"lotus";
+  buildPhotoGallery();
+}
+function buildPhotoGallery(){
+  const box=$("tGallery"); if(!box) return; box.innerHTML="";
+  $("tGalleryBox").hidden=!photoLib.length;
+  photoLib.forEach((p,k)=>{ const w=document.createElement("div"); w.className="pg";
+    const c=document.createElement("canvas"); w.appendChild(c); drawThumb(c,p.id);
+    const l=document.createElement("span"); l.textContent="사진 도안 "+(k+1); w.appendChild(l);
+    const d=document.createElement("button"); d.type="button"; d.className="pg-del"; d.setAttribute("aria-label","사진 도안 "+(k+1)+" 지우기"); d.textContent="×";
+    d.onclick=()=>{ photoLib=photoLib.filter(q=>q.id!==p.id); A.items=A.items.filter(it=>it.motif!==p.id); if(A.pick===p.id) A.pick="koi"; savePhotoLib(); aPersist(); syncPhotoMotifs(); buildMotifs(); persist(); tStatus("지웠어요."); };
+    w.appendChild(d); box.appendChild(w); });
+}
+let lastPhotoId=null;
 $("tUse").onclick=()=>{
-  if(!tMask||!setPhotoFromMask()){ tStatus("남은 선이 없어요. 선의 양을 늘려 보세요."); return; }
-  S.motif="photo"; persist(); buildMotifs(); setMode("pattern"); window.scrollTo(0,0);
+  const c=tMask&&maskToCanvas(); if(!c){ tStatus("남은 선이 없어요. 선의 양을 늘려 보세요."); return; }
+  const id="photo-"+Date.now().toString(36);
+  photoLib.push({id,url:c.toDataURL("image/png"),c}); while(photoLib.length>PHOTO_MAX) photoLib.shift();
+  const ok=savePhotoLib(); syncPhotoMotifs(); buildMotifs(); lastPhotoId=id;
+  $("tAfter").hidden=false;
+  tStatus(ok?"내 문양에 추가했어요. 아래 버튼으로 바로 써 보세요.":"추가했지만 저장 공간이 부족해 새로고침하면 사라질 수 있어요.");
 };
+$("tToPattern").onclick=()=>{ if(!lastPhotoId) return; S.motif=lastPhotoId; persist(); buildMotifs(); setMode("pattern"); window.scrollTo(0,0); };
+$("tToComp").onclick=()=>{ if(!lastPhotoId) return; setMode("comp"); A.pick=lastPhotoId; buildComp(); addItem({t:"motif",motif:lastPhotoId,x:frontX(),y:.5,size:180,rot:0,flip:false}); window.scrollTo(0,0); };
 $("tDl").onclick=()=>{
   if(!downloads||!tMask) return;
   const was=tOrig; tOrig=false; tDraw();
@@ -1807,10 +2011,14 @@ $("tDl").onclick=()=>{
       else { tStatus("이 화면에서는 저장할 수 없어요."); $("tDl").hidden=true; } }
   },"image/png");
 };
-try{
-  const du=localStorage.getItem("pattern-photo-v1");
-  if(du){ const im=new Image(); im.onload=()=>{ const c=document.createElement("canvas"); c.width=im.width; c.height=im.height; c.getContext("2d").drawImage(im,0,0); photoCanvas=c; buildMotifs(); if(S.motif==="photo") render(); }; im.src=du; }
-}catch(e){}
+(function loadPhotoLib(){
+  let arr=[]; try{ arr=JSON.parse(localStorage.getItem(PHOTO_KEY)||"[]")||[]; }catch(e){}
+  try{ const old=localStorage.getItem("pattern-photo-v1"); if(old&&!arr.length){ arr=[{id:"photo-legacy",url:old}]; } }catch(e){}
+  if(!arr.length){ syncPhotoMotifs(); return; }
+  let left=arr.length;
+  arr.forEach(p=>{ const im=new Image(); im.onload=()=>{ const c=document.createElement("canvas"); c.width=im.width; c.height=im.height; c.getContext("2d").drawImage(im,0,0); p.c=c; done(); }; im.onerror=done; im.src=p.url; });
+  function done(){ if(--left>0) return; photoLib=arr.filter(p=>p.c); try{ localStorage.removeItem("pattern-photo-v1"); }catch(e){} savePhotoLib(); syncPhotoMotifs(); buildMotifs(); if(mode==="pattern") render(); else if(mode==="comp"){ buildComp(); drawEditor(); drawPreview(false); } }
+})();
 buildTModes(); buildTPal(); syncT();
 
 /* ---------- 진로 문양 카드 ---------- */
@@ -2004,12 +2212,13 @@ function drawEditor(){
   ectx.restore();
 }
 let pTimer=0;
+function compSrc(){ const G=geom(A.shape); return {id:"comp",key:JSON.stringify([A.items,A.shape,S.palette,S.ink,S.bg,S.lw,S.fill,libVersion]),draw:(x,TW,TH)=>drawComp(x,TW,TH,G)}; }
 function drawPreview(fast){
   setupCanvas(pcv,W,fast);
   const stage=getComputedStyle(document.documentElement).getPropertyValue("--stage").trim()||"#DCE3E4";
   p3ctx.fillStyle=stage; p3ctx.fillRect(0,0,W,W);
   const G=geom(A.shape);
-  renderBottleOn(p3ctx,A.shape,A.spin,fast,{id:"comp",key:JSON.stringify([A.items,A.shape,S.palette,S.ink,S.bg,S.lw,S.fill,!!photoCanvas,(S.custom||[]).length]),draw:(x,TW,TH)=>drawComp(x,TW,TH,G)});
+  renderBottleOn(p3ctx,A.shape,A.spin,fast,compSrc());
 }
 function previewSoon(){ clearTimeout(pTimer); pTimer=setTimeout(()=>{ drawPreview(true); clearTimeout(pTimer); pTimer=setTimeout(()=>drawPreview(false),350); },60); }
 function compRefresh(){ drawEditor(); previewSoon(); aPersist(); }
@@ -2136,6 +2345,41 @@ async function aSave(canvas,name){
     try{ await downloads.save({filename:name,data:blob}); $("aStatus").textContent="저장했어요."; }
     catch(err){ const c=err&&err.code; $("aStatus").textContent=c==="declined"?"저장을 취소했어요.":c==="rate_limited"?"잠시 뒤에 다시 눌러 주세요.":"이 화면에서는 저장할 수 없어요."; } },"image/png");
 }
+
+/* 작품 이미지 카드 */
+[["aTitle","title"],["aName","name"],["aDesc","desc"]].forEach(([id,k])=>{ const el=$(id); el.value=A[k]||""; el.oninput=()=>{ A[k]=el.value; }; el.onchange=aPersist; });
+function artCardCanvas(){
+  const CW=1080, CH=1350, c=document.createElement("canvas"); c.width=CW; c.height=CH; const x=c.getContext("2d");
+  const pal=palette(), ink=(pal.ink||[S.ink])[0], bg=pal.bg||S.bg, src=compSrc();
+  const serif='"Gowun Batang","Nanum Myeongjo",serif', sans='"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  x.fillStyle=bg; x.fillRect(0,0,CW,CH);
+  x.strokeStyle=ink; x.lineWidth=5; x.strokeRect(34,34,CW-68,CH-68); x.lineWidth=1.5; x.strokeRect(48,48,CW-96,CH-96);
+  const view=sp=>{ const o=document.createElement("canvas"), oc=setupCanvas(o,W,false); oc.fillStyle=bg; oc.fillRect(0,0,W,W); renderBottleOn(oc,A.shape,sp,false,src); return o; };
+  x.textAlign="center"; x.fillStyle=ink;
+  x.globalAlpha=.7; x.font="400 28px "+serif; x.fillText("나의 병 작품 · "+(SHAPES[A.shape]||{name:""}).name,CW/2,116); x.globalAlpha=1;
+  x.font="700 56px "+serif; const tl=wrapText(x,A.title||"제목 없는 작품",CW-200); x.fillText(tl[0]||"",CW/2,186);
+  const sp=A.spin||0;
+  const P=profile(SHAPES[A.shape]?A.shape:"maebyeong"), y0=P.top-14, y1=P.bot+P.rmax*.13*1.6+22, x0=W/2-P.rmax*1.25-6, x1=W/2+P.rmax*1.25+6;
+  const fit=(o,dx,dy,dw,dh)=>{ const k=o.width/W, bw=x1-x0, bh=y1-y0, sc=Math.min(dw/bw,dh/bh), w=bw*sc, h=bh*sc;
+    x.drawImage(o,x0*k,y0*k,bw*k,bh*k,dx+(dw-w)/2,dy+(dh-h)/2,w,h); };
+  fit(view(sp),140,226,800,656);
+  const small=[[sp+90,"옆면"],[sp+180,"뒷면"],[sp+270,"옆면"]], sw=250, gap=(CW-140-sw*3)/2;
+  small.forEach(([a,l],i)=>{ const sx=70+i*(sw+gap); fit(view(a%360),sx,900,sw,236);
+    x.globalAlpha=.7; x.font="400 24px "+serif; x.fillStyle=ink; x.fillText(l,sx+sw/2,1168); x.globalAlpha=1; });
+  x.strokeStyle=ink; x.globalAlpha=.35; x.lineWidth=1; x.beginPath(); x.moveTo(140,1190); x.lineTo(CW-140,1190); x.stroke(); x.globalAlpha=1;
+  x.fillStyle="#2A2F3A"; x.font="400 28px "+sans;
+  wrapText(x,A.desc||"",CW-220).slice(0,2).forEach((l,i)=>x.fillText(l,CW/2,1230+i*38));
+  if(A.name){ x.textAlign="right"; x.fillStyle=ink; x.font="700 26px "+serif; x.fillText(A.name,CW-80,CH-64); }
+  x.textAlign="left"; x.globalAlpha=.5; x.fillStyle=ink; x.font="400 18px "+sans; x.fillText("전통문양 도안 만들기",80,CH-64); x.globalAlpha=1;
+  return c;
+}
+function artFileName(){ return "병작품_"+((A.name||A.title||SHAPES[A.shape].name).replace(/[\\/:*?"<>|\s]+/g,"_"))+".png"; }
+$("aDlCard").onclick=()=>{ $("aStatus").textContent="작품 이미지를 만드는 중이에요…"; setTimeout(()=>{ const c=artCardCanvas(); aSave(c,artFileName()); },30); };
+(function(){ try{ const f=new File([new Blob(["x"],{type:"image/png"})],"a.png",{type:"image/png"}); if(navigator.canShare&&navigator.canShare({files:[f]})) $("aShare").hidden=false; }catch(e){} })();
+$("aShare").onclick=()=>{ $("aStatus").textContent="작품 이미지를 만드는 중이에요…";
+  setTimeout(()=>{ artCardCanvas().toBlob(async blob=>{
+    try{ const f=new File([blob],artFileName(),{type:"image/png"}); await navigator.share({files:[f],title:A.title||"나의 병 작품"}); $("aStatus").textContent=""; }
+    catch(err){ $("aStatus").textContent=err&&err.name==="AbortError"?"공유를 취소했어요.":"이 화면에서는 공유할 수 없어요. 작품 이미지 저장을 눌러 주세요."; } },"image/png"); },30); };
 $("aDl3d").onclick=()=>{ drawPreview(false); aSave(pcv,"병작품_"+SHAPES[A.shape].name+".png"); };
 $("aDlFlat").onclick=()=>{ const G=geom(A.shape), c=document.createElement("canvas"); c.width=G.TW; c.height=G.TH; const x=c.getContext("2d"); drawComp(x,G.TW,G.TH,G);
   x.strokeStyle="rgba(0,0,0,.35)"; x.lineWidth=1; x.setLineDash([4,4]); x.beginPath(); for(let v=0;v<G.TH;v+=2){ const hw=Math.PI*G.rv[v]; x.moveTo(G.TW/2-hw,v); x.lineTo(G.TW/2-hw,v+2); x.moveTo(G.TW/2+hw,v); x.lineTo(G.TW/2+hw,v+2); } x.stroke();
