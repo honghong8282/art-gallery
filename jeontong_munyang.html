@@ -2484,18 +2484,15 @@ let rt; window.addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(re
 (function(){
 // ════════════════════════════════════════════════════════
 //  Firebase 설정 — firebase.google.com에서 복사해서 붙여넣으세요
-const FB_CONFIG = null;
-/* 예시:
-const FB_CONFIG = {
-  apiKey: "AIzaSy...",
-  authDomain: "프로젝트명.firebaseapp.com",
-  databaseURL: "https://프로젝트명-default-rtdb.firebaseio.com",
-  projectId: "프로젝트명",
-  storageBucket: "프로젝트명.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:abcdef123456"
-};
-*/
+const firebaseConfig = {
+    apiKey: "AIzaSyDOcREX5UGWiiSckzXvulROyAdffDDb0no",
+    authDomain: "dreams-in-blue-and-white.firebaseapp.com",
+    projectId: "dreams-in-blue-and-white",
+    storageBucket: "dreams-in-blue-and-white.firebasestorage.app",
+    messagingSenderId: "80043449659",
+    appId: "1:80043449659:web:c29a50a1ef4d7fa65deb1e",
+    measurementId: "G-P4BL1ME01Y"
+  };
 // ════════════════════════════════════════════════════════
 const $=id=>document.getElementById(id);
 const galGrid=$("galGrid");
