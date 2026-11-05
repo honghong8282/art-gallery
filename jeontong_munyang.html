@@ -187,6 +187,31 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
 .pg canvas{width:100%;max-width:64px;aspect-ratio:1/1;height:auto;border-radius:3px}
 .pg-del{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;line-height:1;font-size:15px;padding:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* ── 갤러리 ── */
+.gal-grid{max-width:1180px;margin:16px auto 0;padding:0 20px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:14px}
+.gal-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s}
+.gal-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px var(--shadow);border-color:var(--accent)}
+.gal-img{width:100%;aspect-ratio:1;object-fit:contain;background:var(--stage);display:block}
+.gal-info{padding:8px 12px 10px}
+.gal-name{font-family:var(--serif);font-weight:700;font-size:.95rem}
+.gal-meta{color:var(--muted);font-size:.78rem;margin-top:2px}
+.gal-new{animation:galPop .35s ease}
+@keyframes galPop{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+/* ── 라이트박스 ── */
+.lbox{position:fixed;inset:0;background:rgba(5,8,16,.88);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+.lbox[hidden]{display:none}
+.lbox-inner{position:relative;max-width:min(640px,90vw);width:100%}
+.lbox img{width:100%;border-radius:8px;display:block;box-shadow:0 24px 72px rgba(0,0,0,.5)}
+.lbox-info{background:rgba(0,0,0,.72);color:#fff;padding:12px 18px;border-radius:0 0 8px 8px}
+.lbox-info strong{font-family:var(--serif);font-size:1.1rem}
+.lbox-close{position:absolute;top:-44px;right:0;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:50%;width:36px;height:36px;color:#fff;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.lbox-close:hover{background:rgba(255,255,255,.25)}
+/* ── 제출 모달 ── */
+.smodal{position:fixed;inset:0;background:rgba(5,8,16,.55);display:flex;align-items:center;justify-content:center;z-index:150;padding:16px}
+.smodal[hidden]{display:none}
+.smodal-box{background:var(--panel);border-radius:12px;padding:24px;width:min(380px,100%);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.smodal-box h2{font-family:var(--serif);font-size:1.25rem;margin:0 0 4px}
+.smodal-box>p{margin:0 0 16px;color:var(--muted);font-size:.9rem}
 </style>
 </head>
 <body>
@@ -199,6 +224,7 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
     <button type="button" data-mode="trace">사진을 도안으로</button>
     <button type="button" data-mode="comp">병 작품 꾸미기</button>
     <button type="button" data-mode="card">진로 문양 카드</button>
+    <button type="button" data-mode="gallery">갤러리</button>
   </nav>
 </header>
 
@@ -346,6 +372,7 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
       <button class="btn" id="aDlFlat" type="button" hidden>펼친 도안 저장</button>
       <button class="btn" id="aReset" type="button">예시로 다시 시작</button>
       <button class="btn" id="aClear" type="button">모두 지우기</button>
+      <button class="btn primary" id="aSubmit" type="button">수업 제출하기</button>
       <span id="aStatus" role="status"></span>
     </div>
     <div class="info">
@@ -1770,13 +1797,14 @@ $("padUse").onclick=()=>{
 const SUB={pattern:"단위 문양을 고르고 배열 방식을 바꿔 보며 나만의 연속무늬를 디자인해 보세요. 완성한 무늬는 병이나 접시에 입혀 미리 볼 수 있어요.",
            trace:"사진이나 그림을 넣으면 한 가지 색의 선 도안이나 청화 붓그림으로 바꿔 줍니다.",
            comp:"전통 문양과 내가 만든 문양, 꿈을 담은 글귀를 자유롭게 배치해 병 하나를 하나의 작품으로 꾸며 보세요.",
-           card:"진로 분야에 어울리는 전통 문양을 고르고, 문양에 담긴 뜻을 내 꿈과 이어 진로 문양 카드를 만들어 보세요."};
+           card:"진로 분야에 어울리는 전통 문양을 고르고, 문양에 담긴 뜻을 내 꿈과 이어 진로 문양 카드를 만들어 보세요.",
+           gallery:"학생들이 '수업 제출하기'를 누르면 완성 작품이 여기에 실시간으로 나타납니다. 클릭하면 크게 볼 수 있어요."};
 let mode="pattern";
 function setMode(m){
-  mode=m; $("patternMode").hidden=m!=="pattern"; $("traceMode").hidden=m!=="trace"; $("cardMode").hidden=m!=="card"; $("compMode").hidden=m!=="comp";
+  mode=m; $("patternMode").hidden=m!=="pattern"; $("traceMode").hidden=m!=="trace"; $("cardMode").hidden=m!=="card"; $("compMode").hidden=m!=="comp"; $("galleryMode").hidden=m!=="gallery";
   document.querySelectorAll(".modetabs button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.mode===m)));
-  $("subtitle").textContent=SUB[m];
-  if(m==="pattern") render(); else if(m==="trace") tDraw(); else if(m==="comp"){ buildComp(); drawEditor(); drawPreview(false); } else { buildCard(); cDraw(); }
+  $("subtitle").textContent=SUB[m]||"";
+  if(m==="pattern") render(); else if(m==="trace") tDraw(); else if(m==="comp"){ buildComp(); drawEditor(); drawPreview(false); } else if(m==="card"){ buildCard(); cDraw(); }
 }
 document.querySelectorAll(".modetabs button").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
 
@@ -2396,6 +2424,166 @@ buildViews(); buildMotifs(); buildArrs(); buildPalettes(); buildSliders(); syncC
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{});
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",render);
 let rt; window.addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(render,150);});
+})();
+</script>
+<!-- ══ 갤러리 모드 ══ -->
+<main id="galleryMode" hidden>
+  <div id="fbSetup" style="max-width:640px;margin:32px auto;padding:24px;background:var(--panel);border:1px solid var(--line);border-radius:10px">
+    <h2 style="font-family:var(--serif);font-size:1.3rem;margin:0 0 8px">📡 Firebase 연결 필요</h2>
+    <p style="color:var(--muted);margin:0 0 14px">실시간 갤러리를 사용하려면 Firebase를 연결해야 해요. 아래 순서대로 설정하고 이 파일 맨 아래 <code>FB_CONFIG</code>를 채워 GitHub에 Push 해주세요.</p>
+    <ol style="color:var(--muted);padding-left:1.3em;margin:0;line-height:2.1">
+      <li><b>firebase.google.com</b> → Google 계정 로그인 → <b>프로젝트 추가</b> → 이름 입력 → 애널리틱스 끄고 완료</li>
+      <li>왼쪽 메뉴 <b>빌드 → Realtime Database</b> → 데이터베이스 만들기 → <b>테스트 모드</b> → 사용 설정</li>
+      <li>⚙️ 프로젝트 설정 → 내 앱 → <b>&lt;/&gt;</b> 버튼 → 앱 이름 입력 → 등록 → <code>firebaseConfig</code> 복사</li>
+      <li>이 파일 맨 아래 <code>const FB_CONFIG = null;</code> 을 복사한 내용으로 교체 → GitHub Push</li>
+    </ol>
+  </div>
+  <div id="galHeader" style="max-width:1180px;margin:20px auto 0;padding:0 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap" hidden>
+    <span style="font-family:var(--serif);font-weight:700;font-size:1.1rem">실시간 작품 갤러리</span>
+    <span id="galStatus" style="color:var(--muted);font-size:.9rem"></span>
+    <div style="flex:1"></div>
+    <button class="btn" id="galClear" type="button">전체 삭제</button>
+  </div>
+  <div id="galEmpty" style="text-align:center;padding:64px 20px;color:var(--muted)" hidden>
+    <div style="font-family:var(--serif);font-size:1.3rem;color:var(--ink);margin-bottom:8px">아직 제출된 작품이 없어요</div>
+    <div>학생들이 병 작품 꾸미기 탭에서 <b>수업 제출하기</b>를 누르면 여기에 실시간으로 나타납니다.</div>
+  </div>
+  <div id="galGrid" class="gal-grid"></div>
+</main>
+
+<!-- ══ 작품 크게 보기 ══ -->
+<div id="lbox" class="lbox" hidden>
+  <div class="lbox-inner">
+    <button id="lboxClose" class="lbox-close" type="button" aria-label="닫기">✕</button>
+    <img id="lboxImg" src="" alt="">
+    <div class="lbox-info"><strong id="lboxName"></strong><span id="lboxMeta"></span></div>
+  </div>
+</div>
+
+<!-- ══ 제출 모달 ══ -->
+<div id="submitModal" class="smodal" hidden>
+  <div class="smodal-box">
+    <h2>수업 제출하기</h2>
+    <p>완성한 작품을 선생님 갤러리에 보내요.</p>
+    <label class="field">이름<input id="sName" maxlength="20" placeholder="예: 김서연"></label>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
+      <label class="field" style="margin-bottom:0">반<input id="sCls" type="number" min="1" max="8" placeholder="3"></label>
+      <label class="field" style="margin-bottom:0">번호<input id="sNum" type="number" min="1" max="40" placeholder="15"></label>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px">
+      <button class="btn" id="sCancel" type="button" style="flex:1">취소</button>
+      <button class="btn primary" id="sConfirm" type="button" style="flex:1">제출하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script>
+(function(){
+// ════════════════════════════════════════════════════════
+//  Firebase 설정 — firebase.google.com에서 복사해서 붙여넣으세요
+const FB_CONFIG = null;
+/* 예시:
+const FB_CONFIG = {
+  apiKey: "AIzaSy...",
+  authDomain: "프로젝트명.firebaseapp.com",
+  databaseURL: "https://프로젝트명-default-rtdb.firebaseio.com",
+  projectId: "프로젝트명",
+  storageBucket: "프로젝트명.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:abcdef123456"
+};
+*/
+// ════════════════════════════════════════════════════════
+const $=id=>document.getElementById(id);
+const galGrid=$("galGrid");
+let db=null;
+
+if(FB_CONFIG && typeof firebase!=="undefined"){
+  try{
+    firebase.initializeApp(FB_CONFIG);
+    db=firebase.database();
+    $("fbSetup").hidden=true;
+    $("galHeader").hidden=false;
+    $("galEmpty").hidden=false;
+    listenGallery();
+  }catch(e){ console.error("Firebase 초기화 오류:",e); }
+}
+
+function listenGallery(){
+  const ref=db.ref("munyang_gallery");
+  ref.on("child_added",snap=>{
+    const d=snap.val(); if(!d||!d.image) return;
+    $("galEmpty").hidden=true;
+    const card=makeCard(snap.key,d); galGrid.prepend(card);
+    requestAnimationFrame(()=>card.classList.add("gal-new"));
+    $("galStatus").textContent=galGrid.children.length+"명 제출";
+  });
+  ref.on("child_removed",snap=>{
+    galGrid.querySelector('[data-key="'+snap.key+'"]')?.remove();
+    if(!galGrid.children.length) $("galEmpty").hidden=false;
+    $("galStatus").textContent=galGrid.children.length+"명 제출";
+  });
+}
+
+function makeCard(key,d){
+  const el=document.createElement("div");
+  el.className="gal-card"; el.dataset.key=key;
+  const name=String(d.name||"").replace(/</g,"&lt;");
+  el.innerHTML='<img class="gal-img" src="'+d.image+'" alt="'+name+'" loading="lazy">'
+    +'<div class="gal-info"><div class="gal-name">'+name+'</div>'
+    +'<div class="gal-meta">'+d.cls+'반 '+d.num+'번 · '+fmt(d.ts)+'</div></div>';
+  el.onclick=()=>openLbox(d);
+  return el;
+}
+function fmt(ts){ const d=new Date(ts); return d.getHours()+":"+String(d.getMinutes()).padStart(2,"0"); }
+
+/* 라이트박스 */
+const lbox=$("lbox");
+function openLbox(d){
+  $("lboxImg").src=d.image;
+  $("lboxName").textContent=d.name;
+  $("lboxMeta").textContent=" · "+d.cls+"반 "+d.num+"번";
+  lbox.hidden=false;
+}
+lbox.onclick=function(e){ if(e.target===lbox||e.target.id==="lboxClose") lbox.hidden=true; };
+document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&!lbox.hidden) lbox.hidden=true; });
+
+/* 제출 */
+const modal=$("submitModal");
+$("aSubmit").onclick=function(){
+  if(!db){ alert("갤러리 탭을 열어 Firebase 안내를 따라 설정해 주세요."); return; }
+  modal.hidden=false; $("sName").focus();
+};
+$("sCancel").onclick=function(){ modal.hidden=true; };
+$("sConfirm").onclick=async function(){
+  const name=$("sName").value.trim();
+  const cls=$("sCls").value.trim();
+  const num=$("sNum").value.trim();
+  if(!name){ $("sName").focus(); return; }
+  const btn=$("sConfirm"); btn.disabled=true; btn.textContent="제출 중…";
+  try{
+    const pcv=document.getElementById("pcv");
+    const c=document.createElement("canvas"); c.width=c.height=480;
+    c.getContext("2d").drawImage(pcv,0,0,480,480);
+    await db.ref("munyang_gallery").push({name,cls,num,image:c.toDataURL("image/jpeg",.8),ts:Date.now()});
+    modal.hidden=true;
+    const st=document.getElementById("aStatus");
+    st.textContent=name+" 학생 제출 완료!";
+    setTimeout(()=>st.textContent="",3000);
+  }catch(e){
+    document.getElementById("aStatus").textContent="제출 실패. 다시 눌러 주세요.";
+  }
+  btn.disabled=false; btn.textContent="제출하기";
+};
+
+/* 전체 삭제 */
+$("galClear").onclick=function(){
+  if(!db||!confirm("모든 제출 작품을 삭제할까요?")) return;
+  db.ref("munyang_gallery").remove();
+};
 })();
 </script>
 </body>
