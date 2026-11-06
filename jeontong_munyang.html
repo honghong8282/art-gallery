@@ -225,6 +225,7 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
     <button type="button" data-mode="comp">병 작품 꾸미기</button>
     <button type="button" data-mode="card">진로 문양 카드</button>
     <button type="button" data-mode="gallery">갤러리</button>
+    <button type="button" id="jinroBtn">꿈잇다 ↗</button>
   </nav>
 </header>
 
@@ -1814,7 +1815,8 @@ function setMode(m){
   $("subtitle").textContent=SUB[m]||"";
   if(m==="pattern") render(); else if(m==="trace") tDraw(); else if(m==="comp"){ buildComp(); drawEditor(); drawPreview(false); } else if(m==="card"){ buildCard(); cDraw(); }
 }
-document.querySelectorAll(".modetabs button").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+document.querySelectorAll(".modetabs button[data-mode]").forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+document.getElementById("jinroBtn").onclick=()=>window.open("https://jinro.goedu.kr/","_blank");
 
 /* ---------- 사진을 선 도안으로 ---------- */
 const TDEF={mode:"line",detail:5,simple:1,weight:0,speck:4,tone:5,palette:"cheonghwa"};
