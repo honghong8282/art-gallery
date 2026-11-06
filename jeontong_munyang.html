@@ -2452,8 +2452,6 @@ let rt; window.addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(re
   <div id="galHeader" style="max-width:1180px;margin:20px auto 0;padding:0 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap" hidden>
     <span style="font-family:var(--serif);font-weight:700;font-size:1.1rem">실시간 작품 갤러리</span>
     <span id="galStatus" style="color:var(--muted);font-size:.9rem"></span>
-    <div style="flex:1"></div>
-    <button class="btn" id="galClear" type="button">전체 삭제</button>
   </div>
   <div id="galEmpty" style="text-align:center;padding:64px 20px;color:var(--muted)" hidden>
     <div style="font-family:var(--serif);font-size:1.3rem;color:var(--ink);margin-bottom:8px">아직 제출된 작품이 없어요</div>
@@ -2477,10 +2475,6 @@ let rt; window.addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(re
     <h2>수업 제출하기</h2>
     <p>완성한 작품을 선생님 갤러리에 보내요.</p>
     <label class="field">이름<input id="sName" maxlength="20" placeholder="예: 김서연"></label>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px">
-      <label class="field" style="margin-bottom:0">반<input id="sCls" type="number" min="1" max="8" placeholder="3"></label>
-      <label class="field" style="margin-bottom:0">번호<input id="sNum" type="number" min="1" max="40" placeholder="15"></label>
-    </div>
     <div style="display:flex;gap:8px;margin-top:16px">
       <button class="btn" id="sCancel" type="button" style="flex:1">취소</button>
       <button class="btn primary" id="sConfirm" type="button" style="flex:1">제출하기</button>
@@ -2552,18 +2546,24 @@ function makeCard(key,d){
   const name=String(d.name||"").replace(/</g,"&lt;");
   el.innerHTML='<img class="gal-img" src="'+d.image+'" alt="'+name+'" loading="lazy">'
     +'<div class="gal-info"><div class="gal-name">'+name+'</div>'
-    +'<div class="gal-meta">'+d.cls+'반 '+d.num+'번 · '+fmt(d.ts)+'</div></div>';
+    +'<div class="gal-meta">'+fmt(d.ts)+'</div></div>';
   el.onclick=()=>openLbox(d);
   return el;
 }
-function fmt(ts){ const d=new Date(ts); return d.getHours()+":"+String(d.getMinutes()).padStart(2,"0"); }
+function fmt(ts){
+  const d=new Date(ts);
+  const today=new Date(); const isToday=d.toDateString()===today.toDateString();
+  const time=d.getHours()+":"+String(d.getMinutes()).padStart(2,"0");
+  if(isToday) return "오늘 "+time;
+  return (d.getMonth()+1)+"월 "+d.getDate()+"일 "+time;
+}
 
 /* 라이트박스 */
 const lbox=$("lbox");
 function openLbox(d){
   $("lboxImg").src=d.image;
   $("lboxName").textContent=d.name;
-  $("lboxMeta").textContent=" · "+d.cls+"반 "+d.num+"번";
+  $("lboxMeta").textContent=" · "+fmt(d.ts);
   lbox.hidden=false;
 }
 lbox.onclick=function(e){ if(e.target===lbox||e.target.id==="lboxClose") lbox.hidden=true; };
@@ -2578,15 +2578,13 @@ $("aSubmit").onclick=function(){
 $("sCancel").onclick=function(){ modal.hidden=true; };
 $("sConfirm").onclick=async function(){
   const name=$("sName").value.trim();
-  const cls=$("sCls").value.trim();
-  const num=$("sNum").value.trim();
   if(!name){ $("sName").focus(); return; }
   const btn=$("sConfirm"); btn.disabled=true; btn.textContent="제출 중…";
   try{
     const pcv=document.getElementById("pcv");
     const c=document.createElement("canvas"); c.width=c.height=480;
     c.getContext("2d").drawImage(pcv,0,0,480,480);
-    await db.ref("munyang_gallery").push({name,cls,num,image:c.toDataURL("image/jpeg",.8),ts:Date.now()});
+    await db.ref("munyang_gallery").push({name,image:c.toDataURL("image/jpeg",.8),ts:Date.now()});
     modal.hidden=true;
     const st=document.getElementById("aStatus");
     st.textContent=name+" 학생 제출 완료!";
@@ -2600,11 +2598,6 @@ $("sConfirm").onclick=async function(){
   btn.disabled=false; btn.textContent="제출하기";
 };
 
-/* 전체 삭제 */
-$("galClear").onclick=function(){
-  if(!db||!confirm("모든 제출 작품을 삭제할까요?")) return;
-  db.ref("munyang_gallery").remove();
-};
 })();
 </script>
 </body>
