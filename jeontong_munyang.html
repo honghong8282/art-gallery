@@ -2429,14 +2429,25 @@ let rt; window.addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(re
 <!-- ══ 갤러리 모드 ══ -->
 <main id="galleryMode" hidden>
   <div id="fbSetup" style="max-width:640px;margin:32px auto;padding:24px;background:var(--panel);border:1px solid var(--line);border-radius:10px">
-    <h2 style="font-family:var(--serif);font-size:1.3rem;margin:0 0 8px">📡 Firebase 연결 필요</h2>
-    <p style="color:var(--muted);margin:0 0 14px">실시간 갤러리를 사용하려면 Firebase를 연결해야 해요. 아래 순서대로 설정하고 이 파일 맨 아래 <code>FB_CONFIG</code>를 채워 GitHub에 Push 해주세요.</p>
-    <ol style="color:var(--muted);padding-left:1.3em;margin:0;line-height:2.1">
-      <li><b>firebase.google.com</b> → Google 계정 로그인 → <b>프로젝트 추가</b> → 이름 입력 → 애널리틱스 끄고 완료</li>
-      <li>왼쪽 메뉴 <b>빌드 → Realtime Database</b> → 데이터베이스 만들기 → <b>테스트 모드</b> → 사용 설정</li>
-      <li>⚙️ 프로젝트 설정 → 내 앱 → <b>&lt;/&gt;</b> 버튼 → 앱 이름 입력 → 등록 → <code>firebaseConfig</code> 복사</li>
-      <li>이 파일 맨 아래 <code>const FB_CONFIG = null;</code> 을 복사한 내용으로 교체 → GitHub Push</li>
-    </ol>
+    <h2 id="fbSetupTitle" style="font-family:var(--serif);font-size:1.3rem;margin:0 0 8px">📡 Firebase 연결 필요</h2>
+    <p id="fbSetupDesc" style="color:var(--muted);margin:0 0 14px">실시간 갤러리를 사용하려면 Firebase를 연결해야 해요. 아래 순서대로 설정하고 이 파일 맨 아래 <code>FB_CONFIG</code>를 채워 GitHub에 Push 해주세요.</p>
+    <div id="fbSetupSteps">
+      <ol style="color:var(--muted);padding-left:1.3em;margin:0;line-height:2.1">
+        <li><b>firebase.google.com</b> → Google 계정 로그인 → <b>프로젝트 추가</b> → 이름 입력 → 애널리틱스 끄고 완료</li>
+        <li>왼쪽 메뉴 <b>빌드 → Realtime Database</b> → 데이터베이스 만들기 → <b>테스트 모드</b> → 사용 설정</li>
+        <li>⚙️ 프로젝트 설정 → 내 앱 → <b>&lt;/&gt;</b> 버튼 → 앱 이름 입력 → 등록 → <code>firebaseConfig</code> 복사</li>
+        <li>이 파일 맨 아래 <code>const FB_CONFIG = null;</code> 을 복사한 내용으로 교체 → GitHub Push</li>
+      </ol>
+    </div>
+    <div id="fbRuleSteps" style="display:none">
+      <ol style="color:var(--muted);padding-left:1.3em;margin:0;line-height:2.1">
+        <li><b>console.firebase.google.com</b> 접속 → 프로젝트 선택</li>
+        <li>왼쪽 메뉴 <b>빌드 → Realtime Database</b> 클릭</li>
+        <li>상단 <b>규칙</b> 탭 클릭</li>
+        <li>아래 내용으로 교체 후 <b>게시</b> 버튼 클릭:</li>
+      </ol>
+      <pre style="background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:12px;margin-top:10px;font-size:.85rem;overflow-x:auto">{ "rules": { ".read": true, ".write": true } }</pre>
+    </div>
   </div>
   <div id="galHeader" style="max-width:1180px;margin:20px auto 0;padding:0 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap" hidden>
     <span style="font-family:var(--serif);font-weight:700;font-size:1.1rem">실시간 작품 갤러리</span>
@@ -2509,6 +2520,16 @@ if(FB_CONFIG && typeof firebase!=="undefined"){
   }catch(e){ console.error("Firebase 초기화 오류:",e); }
 }
 
+function showRuleError(){
+  $("galHeader").hidden=true;
+  $("galEmpty").hidden=true;
+  $("fbSetup").hidden=false;
+  $("fbSetupTitle").textContent="⚠️ Firebase 규칙 만료됨";
+  $("fbSetupDesc").textContent="Firebase 테스트 모드 보안 규칙(30일 유효)이 만료됐어요. 아래 순서대로 규칙을 갱신해 주세요.";
+  $("fbSetupSteps").style.display="none";
+  $("fbRuleSteps").style.display="block";
+}
+
 function listenGallery(){
   const ref=db.ref("munyang_gallery");
   ref.on("child_added",snap=>{
@@ -2517,7 +2538,7 @@ function listenGallery(){
     const card=makeCard(snap.key,d); galGrid.prepend(card);
     requestAnimationFrame(()=>card.classList.add("gal-new"));
     $("galStatus").textContent=galGrid.children.length+"명 제출";
-  });
+  }, showRuleError);
   ref.on("child_removed",snap=>{
     galGrid.querySelector('[data-key="'+snap.key+'"]')?.remove();
     if(!galGrid.children.length) $("galEmpty").hidden=false;
@@ -2571,7 +2592,10 @@ $("sConfirm").onclick=async function(){
     st.textContent=name+" 학생 제출 완료!";
     setTimeout(()=>st.textContent="",3000);
   }catch(e){
-    document.getElementById("aStatus").textContent="제출 실패. 다시 눌러 주세요.";
+    const msg=(e&&e.code==="PERMISSION_DENIED")||String(e).includes("PERMISSION_DENIED")
+      ?"규칙 만료 — 갤러리 탭에서 안내를 확인해 주세요."
+      :"제출 실패. 다시 눌러 주세요.";
+    document.getElementById("aStatus").textContent=msg;
   }
   btn.disabled=false; btn.textContent="제출하기";
 };
