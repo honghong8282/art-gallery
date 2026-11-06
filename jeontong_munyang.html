@@ -240,6 +240,7 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
     <div class="stage"><canvas id="cv" width="720" height="720" aria-label="패턴 미리보기"></canvas></div>
     <div class="actions">
       <button class="btn primary" id="dl" hidden>그림 파일로 저장</button>
+      <button class="btn primary" id="pSubmit" type="button">수업 제출하기</button>
       <button class="btn" id="random">무작위로 조합하기</button>
       <span id="status" role="status"></span>
     </div>
@@ -2597,29 +2598,36 @@ document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&!lbox.hidd
 
 /* 제출 */
 const modal=$("submitModal");
-$("aSubmit").onclick=function(){
+let submitSourceId="pcv";
+
+function openSubmitModal(sourceCanvasId, statusId){
   if(!db){ alert("갤러리 탭을 열어 Firebase 안내를 따라 설정해 주세요."); return; }
+  submitSourceId=sourceCanvasId;
+  modal.dataset.statusId=statusId;
   modal.hidden=false; $("sName").focus();
-};
+}
+
+$("aSubmit").onclick=function(){ openSubmitModal("pcv","aStatus"); };
+$("pSubmit").onclick=function(){ openSubmitModal("cv","status"); };
 $("sCancel").onclick=function(){ modal.hidden=true; };
 $("sConfirm").onclick=async function(){
   const name=$("sName").value.trim();
   if(!name){ $("sName").focus(); return; }
   const btn=$("sConfirm"); btn.disabled=true; btn.textContent="제출 중…";
   try{
-    const pcv=document.getElementById("pcv");
+    const src=document.getElementById(submitSourceId);
     const c=document.createElement("canvas"); c.width=c.height=480;
-    c.getContext("2d").drawImage(pcv,0,0,480,480);
+    c.getContext("2d").drawImage(src,0,0,480,480);
     await db.ref("munyang_gallery").push({name,image:c.toDataURL("image/jpeg",.8),ts:Date.now()});
     modal.hidden=true;
-    const st=document.getElementById("aStatus");
+    const st=document.getElementById(modal.dataset.statusId||"aStatus");
     st.textContent=name+" 학생 제출 완료!";
     setTimeout(()=>st.textContent="",3000);
   }catch(e){
     const msg=(e&&e.code==="PERMISSION_DENIED")||String(e).includes("PERMISSION_DENIED")
       ?"규칙 만료 — 갤러리 탭에서 안내를 확인해 주세요."
       :"제출 실패. 다시 눌러 주세요.";
-    document.getElementById("aStatus").textContent=msg;
+    document.getElementById(modal.dataset.statusId||"aStatus").textContent=msg;
   }
   btn.disabled=false; btn.textContent="제출하기";
 };
