@@ -1537,7 +1537,8 @@ function render(){
     ctx.fillStyle=stage; ctx.fillRect(0,0,W,W);
     const ink=inks()[0];
     if(S.view==="bottle"){
-      renderBottle3D();
+      const SH=SHAPES[S.shape]||SHAPES.maebyeong;
+      if(SH.flat2d){ renderFlat2D(ctx,SH); } else { renderBottle3D(); }
     } else {
       ctx.save(); ctx.fillStyle="rgba(0,0,0,.14)"; ctx.beginPath(); ctx.arc(366,372,326,0,TAU); ctx.fill(); ctx.restore();
       ctx.save(); ctx.beginPath(); ctx.arc(360,360,326,0,TAU); ctx.clip(); drawPattern(ctx,W,W);
@@ -1581,10 +1582,62 @@ const SHAPES={
     path(){ return symPath([[210,14],[218,172],[228,206],[242,218],[260,222],[360,222],[460,222],[478,218],[492,206],[502,172],[510,14]]); }},
   glasses:{name:"안경케이스", capped:true,
     path(){ return symPath([[62,10],[78,62],[108,98],[148,115],[230,120],[360,122],[490,120],[572,115],[612,98],[642,62],[658,10]]); }},
-  drawer:{name:"사각서랍",
-    path(){ return symPath([[108,8],[112,10],[128,155],[133,160],[597,160],[602,155],[618,10],[622,8]]); }},
-  minion:{name:"미니언즈 통",
-    path(){ return symPath([[102,8],[110,38],[124,78],[148,114],[188,140],[244,158],[312,166],[360,168],[408,166],[476,158],[532,140],[572,114],[596,78],[610,38],[618,8]]); }}
+  drawer:{name:"사각서랍장", flat2d:true,
+    path(){ const p=new Path2D(); p.rect(188,88,344,536); return p; },
+    overlay(ctx,ink){
+      const x0=188,y0=88,w=344,h=536,dh=134,cx=360;
+      ctx.strokeStyle=ink;
+      ctx.lineWidth=2.5;
+      for(let i=1;i<4;i++){ ctx.beginPath(); ctx.moveTo(x0+8,y0+i*dh); ctx.lineTo(x0+w-8,y0+i*dh); ctx.stroke(); }
+      ctx.lineWidth=2;
+      for(let i=0;i<4;i++){
+        const dy=y0+(i+.5)*dh;
+        ctx.beginPath(); ctx.arc(cx-24,dy,8,0,TAU); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx+24,dy,8,0,TAU); ctx.stroke();
+      }
+      ctx.lineWidth=5; ctx.strokeRect(x0,y0,w,h);
+      const gl=ctx.createLinearGradient(x0,0,x0+w,0);
+      gl.addColorStop(0,"rgba(0,0,0,.18)"); gl.addColorStop(.06,"rgba(0,0,0,.04)");
+      gl.addColorStop(.94,"rgba(0,0,0,.04)"); gl.addColorStop(1,"rgba(0,0,0,.18)");
+      ctx.fillStyle=gl; ctx.fillRect(x0,y0,w,h);
+    }},
+  minion:{name:"미니언즈", flat2d:true,
+    path(){ const p=new Path2D(); p.ellipse(360,372,142,238,0,0,TAU); return p; },
+    overlay(ctx,ink){
+      const cx=360,cy=372,rx=142,ry=238;
+      ctx.save();
+      const body=new Path2D(); body.ellipse(cx,cy,rx,ry,0,0,TAU); ctx.clip(body);
+      ctx.fillStyle="rgba(48,82,155,.62)"; ctx.fillRect(cx-rx,538,rx*2,ry);
+      ctx.fillStyle="rgba(48,82,155,.82)"; ctx.fillRect(cx-rx,526,rx*2,28);
+      ctx.restore();
+      ctx.fillStyle="rgba(78,52,18,.74)"; ctx.fillRect(cx-rx,278,rx*2,28);
+      ctx.beginPath(); ctx.arc(cx,284,66,0,TAU);
+      ctx.fillStyle="rgba(255,255,255,.84)"; ctx.fill();
+      ctx.strokeStyle=ink; ctx.lineWidth=6; ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx,292,36,0,TAU);
+      ctx.fillStyle="rgba(48,88,175,.94)"; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx+4,296,22,0,TAU);
+      ctx.fillStyle="rgba(6,6,6,.97)"; ctx.fill();
+      ctx.beginPath(); ctx.arc(cx+13,282,9,0,TAU);
+      ctx.fillStyle="rgba(255,255,255,.9)"; ctx.fill();
+      ctx.strokeStyle="rgba(38,72,142,.9)"; ctx.lineWidth=22; ctx.lineCap="round";
+      ctx.beginPath(); ctx.moveTo(cx-28,526); ctx.quadraticCurveTo(cx-54,436,cx-32,366); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx+28,526); ctx.quadraticCurveTo(cx+54,436,cx+32,366); ctx.stroke();
+      ctx.lineCap="butt";
+      ctx.strokeStyle=ink; ctx.lineWidth=2; ctx.strokeRect(cx-23,554,46,34);
+      ctx.beginPath(); ctx.arc(cx,547,5,0,TAU); ctx.fillStyle=ink; ctx.fill();
+      ctx.strokeStyle=ink; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.arc(cx,452,33,.13*TAU,.37*TAU); ctx.stroke();
+      ctx.fillStyle="rgba(255,255,255,.93)"; ctx.fillRect(cx-20,452,40,18);
+      ctx.strokeStyle=ink; ctx.lineWidth=1.5; ctx.strokeRect(cx-20,452,40,18);
+      ctx.beginPath(); ctx.moveTo(cx,452); ctx.lineTo(cx,470); ctx.stroke();
+      ctx.strokeStyle=ink; ctx.lineWidth=26; ctx.lineCap="round";
+      ctx.beginPath(); ctx.moveTo(cx-140,436); ctx.lineTo(cx-166,474); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx+140,436); ctx.lineTo(cx+166,474); ctx.stroke();
+      ctx.lineCap="butt";
+      ctx.strokeStyle=ink; ctx.lineWidth=5;
+      ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,TAU); ctx.stroke();
+    }}
 };
 const profCache={};
 function profile(id){
@@ -1606,6 +1659,17 @@ function bottleTexture(P,d,src){
   const c=document.createElement("canvas"); c.width=TW*d; c.height=TH*d; const x=c.getContext("2d"); x.setTransform(d,0,0,d,0,0);
   src.draw(x,TW,TH);
   return (texCaches[src.id]={key,data:x.getImageData(0,0,c.width,c.height).data,w:c.width,h:c.height,TW,TH,d});
+}
+function renderFlat2D(c2,SH){
+  const bg=bgColor(),ink=inks()[0],path=SH.path();
+  c2.save(); c2.shadowColor="rgba(0,0,0,.22)"; c2.shadowBlur=24; c2.shadowOffsetX=10; c2.shadowOffsetY=10;
+  c2.fillStyle=bg; c2.fill(path); c2.restore();
+  c2.save(); c2.clip(path); drawPattern(c2,W,W);
+  const g=c2.createLinearGradient(100,0,620,0);
+  g.addColorStop(0,"rgba(0,0,0,.12)"); g.addColorStop(.2,"rgba(255,255,255,.05)");
+  g.addColorStop(.8,"rgba(255,255,255,.05)"); g.addColorStop(1,"rgba(0,0,0,.12)");
+  c2.fillStyle=g; c2.fillRect(0,0,W,W); c2.restore();
+  if(SH.overlay) SH.overlay(c2,ink,bg);
 }
 function renderBottle3D(){
   renderBottleOn(ctx,S.shape,S.spin,fastRender,{id:"pat",key:JSON.stringify([S.motif,S.arr,S.size,S.gap,S.rot,S.lw,S.count,S.palette,S.ink,S.bg,S.fill,S.shape,libVersion]),draw:drawPattern});
