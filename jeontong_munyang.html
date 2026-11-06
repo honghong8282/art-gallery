@@ -1582,7 +1582,7 @@ const SHAPES={
     path(){ return symPath([[210,14],[218,172],[228,206],[242,218],[260,222],[360,222],[460,222],[478,218],[492,206],[502,172],[510,14]]); }},
   glasses:{name:"안경케이스", capped:true,
     path(){ return symPath([[62,10],[78,62],[108,98],[148,115],[230,120],[360,122],[490,120],[572,115],[612,98],[642,62],[658,10]]); }},
-  drawer:{name:"사각서랍장", flat2d:true,
+  drawer:{name:"사각서랍장", flat2d:true, bbox:{x:188,y:88,w:344,h:536},
     path(){ const p=new Path2D(); p.rect(188,88,344,536); return p; },
     overlay(ctx,ink){
       const x0=188,y0=88,w=344,h=536,dh=134,cx=360;
@@ -1601,7 +1601,7 @@ const SHAPES={
       gl.addColorStop(.94,"rgba(0,0,0,.04)"); gl.addColorStop(1,"rgba(0,0,0,.18)");
       ctx.fillStyle=gl; ctx.fillRect(x0,y0,w,h);
     }},
-  minion:{name:"미니언즈", flat2d:true,
+  minion:{name:"미니언즈", flat2d:true, bbox:{x:218,y:134,w:284,h:476},
     path(){ const p=new Path2D(); p.ellipse(360,372,142,238,0,0,TAU); return p; },
     overlay(ctx,ink){
       const cx=360,cy=372,rx=142,ry=238;
@@ -2346,7 +2346,25 @@ function drawPreview(fast){
   setupCanvas(pcv,W,fast);
   const stage=getComputedStyle(document.documentElement).getPropertyValue("--stage").trim()||"#DCE3E4";
   p3ctx.fillStyle=stage; p3ctx.fillRect(0,0,W,W);
-  const G=geom(A.shape);
+  const SH=SHAPES[A.shape]||SHAPES.maebyeong;
+  if(SH.flat2d){
+    const path=SH.path(), bg=bgColor(), ink=inks()[0], bb=SH.bbox;
+    p3ctx.save();
+    p3ctx.shadowColor="rgba(0,0,0,.2)"; p3ctx.shadowBlur=20; p3ctx.shadowOffsetX=8; p3ctx.shadowOffsetY=8;
+    p3ctx.fillStyle=bg; p3ctx.fill(path); p3ctx.restore();
+    p3ctx.save(); p3ctx.clip(path);
+    const G=geom(A.shape);
+    const tmp=document.createElement("canvas"); tmp.width=G.TW; tmp.height=G.TH;
+    drawComp(tmp.getContext("2d"),G.TW,G.TH,G);
+    const srcX=Math.max(0,Math.round((G.TW-bb.w)/2));
+    p3ctx.drawImage(tmp,srcX,0,bb.w,G.TH,bb.x,bb.y,bb.w,bb.h);
+    const gr=p3ctx.createLinearGradient(bb.x,0,bb.x+bb.w,0);
+    gr.addColorStop(0,"rgba(0,0,0,.13)"); gr.addColorStop(.12,"rgba(255,255,255,.04)");
+    gr.addColorStop(.88,"rgba(255,255,255,.04)"); gr.addColorStop(1,"rgba(0,0,0,.13)");
+    p3ctx.fillStyle=gr; p3ctx.fillRect(0,0,W,W); p3ctx.restore();
+    if(SH.overlay) SH.overlay(p3ctx,ink,bg);
+    return;
+  }
   renderBottleOn(p3ctx,A.shape,A.spin,fast,compSrc());
 }
 function previewSoon(){ clearTimeout(pTimer); pTimer=setTimeout(()=>{ drawPreview(true); clearTimeout(pTimer); pTimer=setTimeout(()=>drawPreview(false),350); },60); }
@@ -2559,6 +2577,7 @@ let rt; window.addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(re
 <div id="lbox" class="lbox" hidden>
   <div class="lbox-inner">
     <button id="lboxClose" class="lbox-close" type="button" aria-label="닫기">✕</button>
+    <canvas id="lbox3d" style="display:none;width:100%;border-radius:8px;box-shadow:0 24px 72px rgba(0,0,0,.5)"></canvas>
     <img id="lboxImg" src="" alt="">
     <div class="lbox-info"><strong id="lboxName"></strong><span id="lboxMeta"></span></div>
   </div>
@@ -2655,14 +2674,41 @@ function fmt(ts){
 
 /* 라이트박스 */
 const lbox=$("lbox");
+let lboxRaf=0, lboxSpin=0;
+function stopLbox3d(){ cancelAnimationFrame(lboxRaf); lboxRaf=0; }
 function openLbox(d){
-  $("lboxImg").src=d.image;
+  stopLbox3d();
+  const cv3=$("lbox3d"), img=$("lboxImg");
+  if(d.snap){
+    try{
+      const sp=JSON.parse(d.snap);
+      cv3.width=cv3.height=480; cv3.style.display="block"; img.style.display="none";
+      const ctx3=cv3.getContext("2d");
+      const origS={...S};
+      Object.assign(S,sp);
+      function frame(){
+        lboxSpin=(lboxSpin+0.6)%360;
+        const tmp=S.shape; S.shape=sp.shape||"maebyeong";
+        setupCanvas(cv3,480,true);
+        const stage=getComputedStyle(document.documentElement).getPropertyValue("--stage").trim()||"#DCE3E4";
+        ctx3.fillStyle=stage; ctx3.fillRect(0,0,480,480);
+        renderBottleOn(ctx3,sp.shape||"maebyeong",lboxSpin,true,{id:"lbox",key:JSON.stringify([sp,lboxSpin]),draw:(x,TW,TH)=>drawPattern(x,TW,TH)});
+        S.shape=tmp;
+        lboxRaf=requestAnimationFrame(frame);
+      }
+      frame();
+      Object.assign(S,origS);
+    }catch(e){ cv3.style.display="none"; img.style.display="block"; img.src=d.image; }
+  } else {
+    cv3.style.display="none"; img.style.display="block"; img.src=d.image;
+  }
   $("lboxName").textContent=d.name;
   $("lboxMeta").textContent=" · "+fmt(d.ts);
   lbox.hidden=false;
 }
-lbox.onclick=function(e){ if(e.target===lbox||e.target.id==="lboxClose") lbox.hidden=true; };
-document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&!lbox.hidden) lbox.hidden=true; });
+function closeLbox(){ stopLbox3d(); lbox.hidden=true; }
+lbox.onclick=function(e){ if(e.target===lbox||e.target.id==="lboxClose") closeLbox(); };
+document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&!lbox.hidden) closeLbox(); });
 
 /* 제출 */
 const modal=$("submitModal");
@@ -2686,7 +2732,8 @@ $("sConfirm").onclick=async function(){
     const src=document.getElementById(submitSourceId);
     const c=document.createElement("canvas"); c.width=c.height=480;
     c.getContext("2d").drawImage(src,0,0,480,480);
-    await db.ref("munyang_gallery").push({name,image:c.toDataURL("image/jpeg",.8),ts:Date.now()});
+    const snap={motif:S.motif,arr:S.arr,size:S.size,gap:S.gap,rot:S.rot,lw:S.lw,count:S.count,palette:S.palette,ink:S.ink,bg:S.bg,fill:S.fill,shape:S.shape||"maebyeong"};
+    await db.ref("munyang_gallery").push({name,image:c.toDataURL("image/jpeg",.8),snap:JSON.stringify(snap),ts:Date.now()});
     modal.hidden=true;
     const st=document.getElementById(modal.dataset.statusId||"aStatus");
     st.textContent=name+" 학생 제출 완료!";
