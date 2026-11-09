@@ -2540,14 +2540,18 @@ let rt; window.addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(re
 window._getPatternSnap=function(){
   return JSON.stringify({motif:S.motif,arr:S.arr,size:S.size,gap:S.gap,rot:S.rot,lw:S.lw,count:S.count,palette:S.palette,ink:S.ink,bg:S.bg,fill:S.fill,shape:S.shape||"maebyeong"});
 };
+let _3dOff=null;
 window._renderBottle3DFrame=function(canvas,sp,spin){
+  if(!_3dOff){_3dOff=document.createElement("canvas");_3dOff.width=_3dOff.height=W;}
   const origS={...S}; Object.assign(S,sp);
-  setupCanvas(canvas,480,true);
-  const ctx=canvas.getContext("2d");
+  const ctx=_3dOff.getContext("2d");
   const stage=getComputedStyle(document.documentElement).getPropertyValue("--stage").trim()||"#DCE3E4";
-  ctx.fillStyle=stage; ctx.fillRect(0,0,480,480);
-  renderBottleOn(ctx,sp.shape||"maebyeong",spin,true,{id:"lbox",key:JSON.stringify([sp,spin]),draw:(x,TW,TH)=>drawPattern(x,TW,TH)});
+  ctx.fillStyle=stage; ctx.fillRect(0,0,W,W);
+  renderBottleOn(ctx,sp.shape||"maebyeong",spin,true,{id:"3d_"+(canvas.dataset.uid||"lbox"),key:JSON.stringify([sp,Math.round(spin)]),draw:(x,TW,TH)=>drawPattern(x,TW,TH)});
   Object.assign(S,origS);
+  const tc=canvas.getContext("2d");
+  tc.clearRect(0,0,canvas.width,canvas.height);
+  tc.drawImage(_3dOff,0,0,canvas.width,canvas.height);
 };
 })();
 </script>
@@ -2670,9 +2674,29 @@ function makeCard(key,d){
   const el=document.createElement("div");
   el.className="gal-card"; el.dataset.key=key;
   const name=String(d.name||"").replace(/</g,"&lt;");
-  el.innerHTML='<img class="gal-img" src="'+d.image+'" alt="'+name+'" loading="lazy">'
-    +'<div class="gal-info"><div class="gal-name">'+name+'</div>'
-    +'<div class="gal-meta">'+fmt(d.ts)+'</div></div>';
+  let media;
+  if(d.snap && window._renderBottle3DFrame){
+    try{
+      const sp=JSON.parse(d.snap);
+      const cv=document.createElement("canvas");
+      cv.width=cv.height=180; cv.dataset.uid=key;
+      cv.className="gal-img"; cv.style.cssText="display:block;width:100%;aspect-ratio:1/1;background:var(--stage)";
+      let spin=0,raf=0;
+      function tick(){ spin=(spin+0.5)%360; window._renderBottle3DFrame(cv,sp,spin); raf=requestAnimationFrame(tick); }
+      new IntersectionObserver(es=>{
+        if(es[0].isIntersecting){if(!raf) tick();}
+        else{cancelAnimationFrame(raf);raf=0;}
+      },{threshold:0.1}).observe(cv);
+      media=cv;
+    }catch(e){}
+  }
+  if(!media){
+    media=document.createElement("img");
+    media.className="gal-img"; media.src=d.image; media.alt=name; media.loading="lazy";
+  }
+  const info=document.createElement("div"); info.className="gal-info";
+  info.innerHTML='<div class="gal-name">'+name+'</div><div class="gal-meta">'+fmt(d.ts)+'</div>';
+  el.append(media,info);
   el.onclick=()=>openLbox(d);
   return el;
 }
@@ -2694,9 +2718,10 @@ function openLbox(d){
   if(d.snap){
     try{
       const sp=JSON.parse(d.snap);
-      cv3.width=cv3.height=480; cv3.style.display="block"; img.style.display="none";
+      cv3.width=cv3.height=480; cv3.dataset.uid="lbox";
+      cv3.style.display="block"; img.style.display="none";
       (function tick(){
-        lboxSpin=(lboxSpin+0.6)%360;
+        lboxSpin=(lboxSpin+1)%360;
         if(window._renderBottle3DFrame) window._renderBottle3DFrame(cv3,sp,lboxSpin);
         lboxRaf=requestAnimationFrame(tick);
       })();
