@@ -2537,6 +2537,18 @@ buildViews(); buildMotifs(); buildArrs(); buildPalettes(); buildSliders(); syncC
 if(document.fonts && document.fonts.ready) document.fonts.ready.then(()=>{});
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",render);
 let rt; window.addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(render,150);});
+window._getPatternSnap=function(){
+  return JSON.stringify({motif:S.motif,arr:S.arr,size:S.size,gap:S.gap,rot:S.rot,lw:S.lw,count:S.count,palette:S.palette,ink:S.ink,bg:S.bg,fill:S.fill,shape:S.shape||"maebyeong"});
+};
+window._renderBottle3DFrame=function(canvas,sp,spin){
+  const origS={...S}; Object.assign(S,sp);
+  setupCanvas(canvas,480,true);
+  const ctx=canvas.getContext("2d");
+  const stage=getComputedStyle(document.documentElement).getPropertyValue("--stage").trim()||"#DCE3E4";
+  ctx.fillStyle=stage; ctx.fillRect(0,0,480,480);
+  renderBottleOn(ctx,sp.shape||"maebyeong",spin,true,{id:"lbox",key:JSON.stringify([sp,spin]),draw:(x,TW,TH)=>drawPattern(x,TW,TH)});
+  Object.assign(S,origS);
+};
 })();
 </script>
 <!-- ══ 갤러리 모드 ══ -->
@@ -2683,21 +2695,11 @@ function openLbox(d){
     try{
       const sp=JSON.parse(d.snap);
       cv3.width=cv3.height=480; cv3.style.display="block"; img.style.display="none";
-      const ctx3=cv3.getContext("2d");
-      const origS={...S};
-      Object.assign(S,sp);
-      function frame(){
+      (function tick(){
         lboxSpin=(lboxSpin+0.6)%360;
-        const tmp=S.shape; S.shape=sp.shape||"maebyeong";
-        setupCanvas(cv3,480,true);
-        const stage=getComputedStyle(document.documentElement).getPropertyValue("--stage").trim()||"#DCE3E4";
-        ctx3.fillStyle=stage; ctx3.fillRect(0,0,480,480);
-        renderBottleOn(ctx3,sp.shape||"maebyeong",lboxSpin,true,{id:"lbox",key:JSON.stringify([sp,lboxSpin]),draw:(x,TW,TH)=>drawPattern(x,TW,TH)});
-        S.shape=tmp;
-        lboxRaf=requestAnimationFrame(frame);
-      }
-      frame();
-      Object.assign(S,origS);
+        if(window._renderBottle3DFrame) window._renderBottle3DFrame(cv3,sp,lboxSpin);
+        lboxRaf=requestAnimationFrame(tick);
+      })();
     }catch(e){ cv3.style.display="none"; img.style.display="block"; img.src=d.image; }
   } else {
     cv3.style.display="none"; img.style.display="block"; img.src=d.image;
@@ -2732,8 +2734,8 @@ $("sConfirm").onclick=async function(){
     const src=document.getElementById(submitSourceId);
     const c=document.createElement("canvas"); c.width=c.height=480;
     c.getContext("2d").drawImage(src,0,0,480,480);
-    const snap={motif:S.motif,arr:S.arr,size:S.size,gap:S.gap,rot:S.rot,lw:S.lw,count:S.count,palette:S.palette,ink:S.ink,bg:S.bg,fill:S.fill,shape:S.shape||"maebyeong"};
-    await db.ref("munyang_gallery").push({name,image:c.toDataURL("image/jpeg",.8),snap:JSON.stringify(snap),ts:Date.now()});
+    const snapStr=window._getPatternSnap?window._getPatternSnap():null;
+    await db.ref("munyang_gallery").push({name,image:c.toDataURL("image/jpeg",.8),snap:snapStr,ts:Date.now()});
     modal.hidden=true;
     const st=document.getElementById(modal.dataset.statusId||"aStatus");
     st.textContent=name+" 학생 제출 완료!";
