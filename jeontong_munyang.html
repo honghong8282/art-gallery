@@ -2609,6 +2609,10 @@ let rt; window.addEventListener("resize",()=>{clearTimeout(rt); rt=setTimeout(re
 window._getPatternSnap=function(){
   return JSON.stringify({motif:S.motif,arr:S.arr,size:S.size,gap:S.gap,rot:S.rot,lw:S.lw,count:S.count,palette:S.palette,ink:S.ink,bg:S.bg,fill:S.fill,shape:S.shape||"maebyeong"});
 };
+window._getCompSnap=function(){
+  return JSON.stringify({type:"comp",shape:A.shape,items:A.items,palette:S.palette,ink:S.ink,bg:S.bg,lw:S.lw,fill:S.fill});
+};
+window.SHAPES=SHAPES;
 let _3dOff=null;
 window._renderBottle3DFrame=function(canvas,sp,spin){
   if(!_3dOff){_3dOff=document.createElement("canvas");_3dOff.width=_3dOff.height=W;}
@@ -2616,11 +2620,47 @@ window._renderBottle3DFrame=function(canvas,sp,spin){
   const ctx=_3dOff.getContext("2d");
   const stage=getComputedStyle(document.documentElement).getPropertyValue("--stage").trim()||"#DCE3E4";
   ctx.fillStyle=stage; ctx.fillRect(0,0,W,W);
-  renderBottleOn(ctx,sp.shape||"maebyeong",spin,true,{id:"3d_"+(canvas.dataset.uid||"lbox"),key:JSON.stringify([sp,Math.round(spin)]),draw:(x,TW,TH)=>drawPattern(x,TW,TH)});
+  const SH=SHAPES[sp.shape||"maebyeong"];
+  if(SH&&SH.flat2d){ renderFlat2D(ctx,SH); }
+  else{ renderBottleOn(ctx,sp.shape||"maebyeong",spin,true,{id:"3d_"+(canvas.dataset.uid||"lbox"),key:JSON.stringify([sp,Math.round(spin)]),draw:(x,TW,TH)=>drawPattern(x,TW,TH)}); }
   Object.assign(S,origS);
   const tc=canvas.getContext("2d");
   tc.clearRect(0,0,canvas.width,canvas.height);
   tc.drawImage(_3dOff,0,0,canvas.width,canvas.height);
+};
+let _compOff=null;
+window._renderComp3DFrame=function(canvas,sp,spin){
+  if(!_compOff){_compOff=document.createElement("canvas");_compOff.width=_compOff.height=W;}
+  const origS={...S},origShape=A.shape,origItems=A.items;
+  A.shape=sp.shape||"maebyeong"; A.items=sp.items||[];
+  S.palette=sp.palette; if(sp.ink)S.ink=sp.ink; if(sp.bg)S.bg=sp.bg; if(sp.lw)S.lw=sp.lw; S.fill=!!sp.fill;
+  const ctx=_compOff.getContext("2d");
+  const stage=getComputedStyle(document.documentElement).getPropertyValue("--stage").trim()||"#DCE3E4";
+  ctx.fillStyle=stage; ctx.fillRect(0,0,W,W);
+  const SH=SHAPES[A.shape]||SHAPES.maebyeong;
+  if(SH.flat2d){
+    const path=SH.path(),bg=bgColor(),ink=inks()[0],bb=SH.bbox;
+    ctx.save(); ctx.shadowColor="rgba(0,0,0,.22)"; ctx.shadowBlur=24; ctx.shadowOffsetX=10; ctx.shadowOffsetY=10;
+    ctx.fillStyle=bg; ctx.fill(path); ctx.restore();
+    ctx.save(); ctx.clip(path);
+    const G=geom(A.shape);
+    const tmp=document.createElement("canvas"); tmp.width=G.TW; tmp.height=G.TH;
+    drawComp(tmp.getContext("2d"),G.TW,G.TH,G);
+    const srcX=Math.max(0,Math.round((G.TW-bb.w)/2));
+    ctx.drawImage(tmp,srcX,0,bb.w,G.TH,bb.x,bb.y,bb.w,bb.h);
+    const gr=ctx.createLinearGradient(bb.x,0,bb.x+bb.w,0);
+    gr.addColorStop(0,"rgba(0,0,0,.13)"); gr.addColorStop(.12,"rgba(255,255,255,.04)");
+    gr.addColorStop(.88,"rgba(255,255,255,.04)"); gr.addColorStop(1,"rgba(0,0,0,.13)");
+    ctx.fillStyle=gr; ctx.fillRect(0,0,W,W); ctx.restore();
+    if(SH.overlay) SH.overlay(ctx,ink,bg);
+  } else {
+    const G=geom(A.shape);
+    renderBottleOn(ctx,A.shape,spin,true,{id:"comp_"+(canvas.dataset.uid||"lbox"),key:JSON.stringify([sp.items,sp.shape,sp.palette,sp.ink,sp.bg,sp.lw,sp.fill,Math.round(spin)]),draw:(x,TW,TH)=>drawComp(x,TW,TH,G)});
+  }
+  Object.assign(S,origS); A.shape=origShape; A.items=origItems;
+  const tc=canvas.getContext("2d");
+  tc.clearRect(0,0,canvas.width,canvas.height);
+  tc.drawImage(_compOff,0,0,canvas.width,canvas.height);
 };
 })();
 </script>
@@ -2663,6 +2703,7 @@ window._renderBottle3DFrame=function(canvas,sp,spin){
   <div class="lbox-inner">
     <button id="lboxClose" class="lbox-close" type="button" aria-label="닫기">✕</button>
     <canvas id="lbox3d" style="display:none;width:100%;border-radius:8px;box-shadow:0 24px 72px rgba(0,0,0,.5)"></canvas>
+    <p id="lbox3dHint" style="display:none;text-align:center;color:rgba(255,255,255,.5);font-size:.8rem;margin:6px 0 0">끌어서 돌려보세요</p>
     <img id="lboxImg" src="" alt="">
     <div class="lbox-info"><strong id="lboxName"></strong><span id="lboxMeta"></span></div>
   </div>
@@ -2744,18 +2785,27 @@ function makeCard(key,d){
   el.className="gal-card"; el.dataset.key=key;
   const name=String(d.name||"").replace(/</g,"&lt;");
   let media;
-  if(d.snap && window._renderBottle3DFrame){
+  if(d.snap && (window._renderBottle3DFrame||window._renderComp3DFrame)){
     try{
       const sp=JSON.parse(d.snap);
+      const isComp=sp.type==="comp";
+      const renderer=(isComp&&window._renderComp3DFrame)?window._renderComp3DFrame:window._renderBottle3DFrame;
+      if(!renderer) throw new Error("no renderer");
+      const SH=window.SHAPES&&window.SHAPES[sp.shape||"maebyeong"];
+      const isFlat=!!(SH&&SH.flat2d);
       const cv=document.createElement("canvas");
       cv.width=cv.height=180; cv.dataset.uid=key;
       cv.className="gal-img"; cv.style.cssText="display:block;width:100%;aspect-ratio:1/1;background:var(--stage)";
-      let spin=0,raf=0;
-      function tick(){ spin=(spin+0.5)%360; window._renderBottle3DFrame(cv,sp,spin); raf=requestAnimationFrame(tick); }
-      new IntersectionObserver(es=>{
-        if(es[0].isIntersecting){if(!raf) tick();}
-        else{cancelAnimationFrame(raf);raf=0;}
-      },{threshold:0.1}).observe(cv);
+      if(isFlat){
+        requestAnimationFrame(()=>renderer(cv,sp,0));
+      } else {
+        let spin=0,raf=0;
+        function tick(){ spin=(spin+0.5)%360; renderer(cv,sp,spin); raf=requestAnimationFrame(tick); }
+        new IntersectionObserver(es=>{
+          if(es[0].isIntersecting){if(!raf) tick();}
+          else{cancelAnimationFrame(raf);raf=0;}
+        },{threshold:0.1}).observe(cv);
+      }
       media=cv;
     }catch(e){}
   }
@@ -2779,24 +2829,35 @@ function fmt(ts){
 
 /* 라이트박스 */
 const lbox=$("lbox");
-let lboxRaf=0, lboxSpin=0;
-function stopLbox3d(){ cancelAnimationFrame(lboxRaf); lboxRaf=0; }
+let lboxRaf=0, lboxSpin=0, lboxAutoPlay=true, lboxDragging=false, lboxDragX=0;
+function stopLbox3d(){ cancelAnimationFrame(lboxRaf); lboxRaf=0; lboxAutoPlay=true; lboxDragging=false; }
 function openLbox(d){
   stopLbox3d();
-  const cv3=$("lbox3d"), img=$("lboxImg");
+  const cv3=$("lbox3d"), img=$("lboxImg"), hint=$("lbox3dHint");
   if(d.snap){
     try{
       const sp=JSON.parse(d.snap);
+      const isComp=sp.type==="comp";
+      const renderer=(isComp&&window._renderComp3DFrame)?window._renderComp3DFrame:window._renderBottle3DFrame;
+      if(!renderer) throw new Error("no renderer");
+      const SH=window.SHAPES&&window.SHAPES[sp.shape||"maebyeong"];
+      const isFlat=!!(SH&&SH.flat2d);
       cv3.width=cv3.height=480; cv3.dataset.uid="lbox";
       cv3.style.display="block"; img.style.display="none";
-      (function tick(){
-        lboxSpin=(lboxSpin+1)%360;
-        if(window._renderBottle3DFrame) window._renderBottle3DFrame(cv3,sp,lboxSpin);
-        lboxRaf=requestAnimationFrame(tick);
-      })();
-    }catch(e){ cv3.style.display="none"; img.style.display="block"; img.src=d.image; }
+      if(hint) hint.style.display=isFlat?"none":"block";
+      if(isFlat){
+        renderer(cv3,sp,0);
+      } else {
+        lboxAutoPlay=true;
+        (function tick(){
+          if(lboxAutoPlay) lboxSpin=(lboxSpin+1)%360;
+          renderer(cv3,sp,lboxSpin);
+          lboxRaf=requestAnimationFrame(tick);
+        })();
+      }
+    }catch(e){ cv3.style.display="none"; img.style.display="block"; img.src=d.image; if(hint) hint.style.display="none"; }
   } else {
-    cv3.style.display="none"; img.style.display="block"; img.src=d.image;
+    cv3.style.display="none"; img.style.display="block"; img.src=d.image; if(hint) hint.style.display="none";
   }
   $("lboxName").textContent=d.name;
   $("lboxMeta").textContent=" · "+fmt(d.ts);
@@ -2805,6 +2866,24 @@ function openLbox(d){
 function closeLbox(){ stopLbox3d(); lbox.hidden=true; }
 lbox.onclick=function(e){ if(e.target===lbox||e.target.id==="lboxClose") closeLbox(); };
 document.addEventListener("keydown",function(e){ if(e.key==="Escape"&&!lbox.hidden) closeLbox(); });
+/* 드래그 회전 */
+const cv3el=$("lbox3d");
+cv3el.style.cursor="grab";
+cv3el.addEventListener("mousedown",function(e){lboxDragging=true;lboxDragX=e.clientX;lboxAutoPlay=false;cv3el.style.cursor="grabbing";});
+document.addEventListener("mousemove",function(e){
+  if(!lboxDragging||lbox.hidden) return;
+  lboxSpin=(((lboxSpin+(e.clientX-lboxDragX)*0.5)%360)+360)%360;
+  lboxDragX=e.clientX;
+});
+document.addEventListener("mouseup",function(){if(lboxDragging){lboxDragging=false;lboxAutoPlay=true;cv3el.style.cursor="grab";}});
+cv3el.addEventListener("touchstart",function(e){if(e.touches.length!==1)return;lboxDragging=true;lboxDragX=e.touches[0].clientX;lboxAutoPlay=false;e.preventDefault();},{passive:false});
+document.addEventListener("touchmove",function(e){
+  if(!lboxDragging||lbox.hidden) return;
+  lboxSpin=(((lboxSpin+(e.touches[0].clientX-lboxDragX)*0.5)%360)+360)%360;
+  lboxDragX=e.touches[0].clientX;
+  e.preventDefault();
+},{passive:false});
+document.addEventListener("touchend",function(){if(lboxDragging){lboxDragging=false;lboxAutoPlay=true;}});
 
 /* 제출 */
 const modal=$("submitModal");
@@ -2828,7 +2907,8 @@ $("sConfirm").onclick=async function(){
     const src=document.getElementById(submitSourceId);
     const c=document.createElement("canvas"); c.width=c.height=480;
     c.getContext("2d").drawImage(src,0,0,480,480);
-    const snapStr=window._getPatternSnap?window._getPatternSnap():null;
+    const isComp=submitSourceId==="pcv";
+    const snapStr=isComp?(window._getCompSnap?window._getCompSnap():null):(window._getPatternSnap?window._getPatternSnap():null);
     await db.ref("munyang_gallery").push({name,image:c.toDataURL("image/jpeg",.8),snap:snapStr,ts:Date.now()});
     modal.hidden=true;
     const st=document.getElementById(modal.dataset.statusId||"aStatus");
