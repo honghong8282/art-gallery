@@ -1637,6 +1637,75 @@ const SHAPES={
       ctx.lineCap="butt";
       ctx.strokeStyle=ink; ctx.lineWidth=5;
       ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,TAU); ctx.stroke();
+    }},
+  pump:{name:"펌프용기", flat2d:true, bbox:{x:206,y:155,w:308,h:490},
+    path(){
+      const p=new Path2D(),cx=360;
+      p.moveTo(cx-54,155); p.lineTo(cx+54,155);
+      p.lineTo(cx+54,185); p.bezierCurveTo(cx+54,210,cx+154,220,cx+154,245);
+      p.lineTo(cx+154,615); p.quadraticCurveTo(cx+154,645,cx+124,645);
+      p.lineTo(cx-124,645); p.quadraticCurveTo(cx-154,645,cx-154,615);
+      p.lineTo(cx-154,245); p.bezierCurveTo(cx-154,220,cx-54,210,cx-54,185);
+      p.closePath(); return p;
+    },
+    overlay(ctx,ink,bg){
+      const cx=360;
+      ctx.fillStyle=bg; ctx.fillRect(cx-54,116,108,42);
+      ctx.strokeStyle=ink; ctx.lineWidth=3;
+      ctx.beginPath(); ctx.moveTo(cx-54,155); ctx.lineTo(cx-54,116); ctx.moveTo(cx+54,155); ctx.lineTo(cx+54,116); ctx.stroke();
+      const col=new Path2D(); col.rect(cx-66,114,132,36);
+      ctx.fillStyle=bg; ctx.fill(col); ctx.strokeStyle=ink; ctx.lineWidth=3; ctx.stroke(col);
+      const head=new Path2D(); head.rect(cx-56,72,112,46);
+      ctx.fillStyle=bg; ctx.fill(head); ctx.strokeStyle=ink; ctx.lineWidth=3; ctx.stroke(head);
+      ctx.beginPath();
+      ctx.moveTo(cx+56,80); ctx.lineTo(cx+148,80); ctx.lineTo(cx+156,94); ctx.lineTo(cx+156,112); ctx.lineTo(cx+56,112);
+      ctx.closePath(); ctx.fillStyle=bg; ctx.fill(); ctx.strokeStyle=ink; ctx.lineWidth=3; ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx+153,103,7,0,Math.PI*2); ctx.fillStyle=ink; ctx.fill();
+      const body=new Path2D();
+      body.moveTo(cx-54,155); body.lineTo(cx+54,155);
+      body.lineTo(cx+54,185); body.bezierCurveTo(cx+54,210,cx+154,220,cx+154,245);
+      body.lineTo(cx+154,615); body.quadraticCurveTo(cx+154,645,cx+124,645);
+      body.lineTo(cx-124,645); body.quadraticCurveTo(cx-154,645,cx-154,615);
+      body.lineTo(cx-154,245); body.bezierCurveTo(cx-154,220,cx-54,210,cx-54,185);
+      body.closePath(); ctx.strokeStyle=ink; ctx.lineWidth=4.5; ctx.stroke(body);
+    }},
+  phone:{name:"핸드폰 케이스", flat2d:true, bbox:{x:214,y:82,w:292,h:568},
+    path(){
+      const p=new Path2D(),r=36,x=214,y=82,w=292,h=568;
+      p.moveTo(x+r,y); p.lineTo(x+w-r,y); p.quadraticCurveTo(x+w,y,x+w,y+r);
+      p.lineTo(x+w,y+h-r); p.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      p.lineTo(x+r,y+h); p.quadraticCurveTo(x,y+h,x,y+h-r);
+      p.lineTo(x,y+r); p.quadraticCurveTo(x,y,x+r,y); p.closePath(); return p;
+    },
+    overlay(ctx,ink,bg){
+      const x=214,y=82,w=292,h=568,cx=360,r=36;
+      const body=new Path2D();
+      body.moveTo(x+r,y); body.lineTo(x+w-r,y); body.quadraticCurveTo(x+w,y,x+w,y+r);
+      body.lineTo(x+w,y+h-r); body.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+      body.lineTo(x+r,y+h); body.quadraticCurveTo(x,y+h,x,y+h-r);
+      body.lineTo(x,y+r); body.quadraticCurveTo(x,y,x+r,y); body.closePath();
+      ctx.strokeStyle=ink; ctx.lineWidth=5; ctx.stroke(body);
+      const bx=x+w-80,by=y+28,bw=62,bh=58,cr=12;
+      const cam=new Path2D();
+      cam.moveTo(bx+cr,by); cam.lineTo(bx+bw-cr,by); cam.quadraticCurveTo(bx+bw,by,bx+bw,by+cr);
+      cam.lineTo(bx+bw,by+bh-cr); cam.quadraticCurveTo(bx+bw,by+bh,bx+bw-cr,by+bh);
+      cam.lineTo(bx+cr,by+bh); cam.quadraticCurveTo(bx,by+bh,bx,by+bh-cr);
+      cam.lineTo(bx,by+cr); cam.quadraticCurveTo(bx,by,bx+cr,by); cam.closePath();
+      ctx.fillStyle=bg; ctx.fill(cam); ctx.strokeStyle=ink; ctx.lineWidth=3; ctx.stroke(cam);
+      [[bx+20,by+22,10],[bx+44,by+22,10],[bx+20,by+42,8]].forEach(([lx,ly,lr])=>{
+        ctx.beginPath(); ctx.arc(lx,ly,lr,0,Math.PI*2);
+        ctx.fillStyle="rgba(0,0,0,.3)"; ctx.fill(); ctx.strokeStyle=ink; ctx.lineWidth=1.5; ctx.stroke();
+      });
+      ctx.beginPath(); ctx.arc(bx+44,by+42,5,0,Math.PI*2); ctx.fillStyle="rgba(255,218,76,.8)"; ctx.fill(); ctx.strokeStyle=ink; ctx.lineWidth=1.5; ctx.stroke();
+      [[y+175,50],[y+242,50],[y+308,50]].forEach(([by2,bh2])=>{ ctx.fillStyle=bg; ctx.fillRect(x-12,by2,14,bh2); ctx.strokeStyle=ink; ctx.lineWidth=2; ctx.strokeRect(x-12,by2,14,bh2); });
+      ctx.fillStyle=bg; ctx.fillRect(x+w-2,y+218,14,70); ctx.strokeStyle=ink; ctx.lineWidth=2; ctx.strokeRect(x+w-2,y+218,14,70);
+      const pw=72,ph=16,pr=8,px2=cx-36,py2=y+h-ph-16;
+      const port=new Path2D();
+      port.moveTo(px2+pr,py2); port.lineTo(px2+pw-pr,py2); port.quadraticCurveTo(px2+pw,py2,px2+pw,py2+pr);
+      port.lineTo(px2+pw,py2+ph-pr); port.quadraticCurveTo(px2+pw,py2+ph,px2+pw-pr,py2+ph);
+      port.lineTo(px2+pr,py2+ph); port.quadraticCurveTo(px2,py2+ph,px2,py2+ph-pr);
+      port.lineTo(px2,py2+pr); port.quadraticCurveTo(px2,py2,px2+pr,py2); port.closePath();
+      ctx.fillStyle=bg; ctx.fill(port); ctx.strokeStyle=ink; ctx.lineWidth=2; ctx.stroke(port);
     }}
 };
 const profCache={};
