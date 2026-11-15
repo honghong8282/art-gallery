@@ -161,10 +161,12 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
   .top{padding:16px 14px 0}
   .top h1{font-size:1.5rem}
   .top p{font-size:.92rem}
-  .modetabs{position:fixed;bottom:0;left:0;right:0;top:auto;z-index:20;background:var(--panel);border-top:1px solid var(--line);border-bottom:none;box-shadow:0 -2px 20px var(--shadow);padding-bottom:env(safe-area-inset-bottom,0px);margin:0;display:flex;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  .modetabs{position:fixed;bottom:0;left:0;right:0;top:auto;z-index:20;background:var(--panel);border-top:1px solid var(--line);border-bottom:none;box-shadow:0 -2px 20px var(--shadow);padding-bottom:env(safe-area-inset-bottom,0px);margin:0;display:flex;overflow-x:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
   .modetabs::-webkit-scrollbar{display:none}
-  .modetabs button{flex:0 0 auto;min-width:60px;padding:10px 4px 8px;font-size:.68rem;border-top:3px solid transparent;border-bottom:none;margin-bottom:0;min-height:52px;letter-spacing:-.01em;}
-  .modetabs button[aria-pressed="true"]{border-top-color:var(--accent);border-bottom-color:transparent;color:var(--ink);font-weight:700;}
+  .modetabs button{flex:1;min-width:0;padding:8px 2px 6px;font-size:0;border-top:3px solid transparent;border-bottom:none;margin-bottom:0;min-height:52px;}
+  .modetabs button::after{content:attr(data-short);font-size:.66rem;display:block;line-height:1.35;word-break:keep-all}
+  .modetabs button[aria-pressed="true"]{border-top-color:var(--accent);border-bottom-color:transparent;color:var(--ink);}
+  .modetabs button[aria-pressed="true"]::after{font-weight:700}
   .layout{padding:12px 12px calc(72px + env(safe-area-inset-bottom,0px)) 12px}
   .panel{padding:2px 14px 14px;border-radius:10px;box-shadow:none;}
   .stage,.tstage,.cstage,.estage{padding:8px;border-radius:8px}
@@ -238,12 +240,12 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
   <h1>전통문양 도안 만들기</h1>
   <p id="subtitle"></p>
   <nav class="modetabs" aria-label="작업 고르기">
-    <button type="button" data-mode="pattern">무늬 배열하기</button>
-    <button type="button" data-mode="trace">사진을 도안으로</button>
-    <button type="button" data-mode="comp">병 작품 꾸미기</button>
-    <button type="button" data-mode="card">진로 문양 카드</button>
-    <button type="button" data-mode="gallery">갤러리</button>
-    <button type="button" id="jinroBtn">꿈it(잇)다 ↗</button>
+    <button type="button" data-mode="pattern" data-short="무늬배열">무늬 배열하기</button>
+    <button type="button" data-mode="trace" data-short="사진도안">사진을 도안으로</button>
+    <button type="button" data-mode="comp" data-short="병작품">병 작품 꾸미기</button>
+    <button type="button" data-mode="card" data-short="문양카드">진로 문양 카드</button>
+    <button type="button" data-mode="gallery" data-short="갤러리">갤러리</button>
+    <button type="button" id="jinroBtn" data-short="꿈it↗">꿈it(잇)다 ↗</button>
   </nav>
 </header>
 
