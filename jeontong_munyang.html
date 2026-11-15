@@ -161,9 +161,9 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
   .top{padding:16px 14px 0}
   .top h1{font-size:1.5rem}
   .top p{font-size:.92rem}
-  .modetabs{position:fixed;bottom:0;left:0;right:0;top:auto;z-index:20;background:var(--panel);border-top:1px solid var(--line);border-bottom:none;box-shadow:0 -2px 20px var(--shadow);padding-bottom:env(safe-area-inset-bottom,0px);margin:0;display:flex;overflow-x:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+  .modetabs{position:fixed;bottom:0;left:0;right:0;top:auto;z-index:20;background:var(--panel);border-top:1px solid var(--line);border-bottom:none;box-shadow:0 -2px 20px var(--shadow);padding-bottom:env(safe-area-inset-bottom,0px);margin:0;display:flex;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
   .modetabs::-webkit-scrollbar{display:none}
-  .modetabs button{flex:1;min-width:0;padding:10px 2px 8px;font-size:.68rem;border-top:3px solid transparent;border-bottom:none;margin-bottom:0;min-height:52px;letter-spacing:-.01em;}
+  .modetabs button{flex:0 0 auto;min-width:60px;padding:10px 4px 8px;font-size:.68rem;border-top:3px solid transparent;border-bottom:none;margin-bottom:0;min-height:52px;letter-spacing:-.01em;}
   .modetabs button[aria-pressed="true"]{border-top-color:var(--accent);border-bottom-color:transparent;color:var(--ink);font-weight:700;}
   .layout{padding:12px 12px calc(72px + env(safe-area-inset-bottom,0px)) 12px}
   .panel{padding:2px 14px 14px;border-radius:10px;box-shadow:none;}
@@ -181,6 +181,24 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
   .viewtabs button{flex:1 1 auto}
   .bottlectl{gap:8px}
   .compgrid{gap:12px}
+  /* 갤러리 모드 */
+  #galleryMode{padding-bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+  #galHeader{padding:0 12px;margin-top:12px}
+  #galEmpty{padding:40px 16px}
+  #fbSetup{margin:16px 12px !important;padding:16px !important}
+  #fbSetup li{line-height:1.9}
+  .gal-grid{grid-template-columns:repeat(2,1fr);gap:10px;padding:0 12px calc(16px)}
+  .gal-card{border-radius:8px}
+  .gal-info{padding:6px 10px 8px}
+  .gal-name{font-size:.88rem}
+  .gal-meta{font-size:.72rem}
+  /* 라이트박스 */
+  .lbox{padding:12px;align-items:flex-end}
+  .lbox-inner{max-width:100%}
+  .lbox-close{top:-46px;width:40px;height:40px;font-size:1.1rem}
+  /* 제출 모달 */
+  #sName{font-size:16px}
+  .smodal{padding:12px}
 }
 .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .pg{position:relative;border:1px solid var(--line);border-radius:6px;padding:6px 4px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.76rem;color:var(--muted)}
