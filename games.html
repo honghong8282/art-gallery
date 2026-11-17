@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>미술 게임 · 홍인 art class</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#c8a060;--bg:#08060a;--card:#100e14;--text:#e8d9b8;--muted:#8a7a5a;--line:#c8a06028}
+body{background:var(--bg);color:var(--text);font-family:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;min-height:100vh}
+canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* 상단 */
+.topbar{display:flex;align-items:center;gap:12px;padding:18px 24px;border-bottom:1px solid var(--line)}
+.back{display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);font-size:.82rem;letter-spacing:.12em;transition:color .2s}
+.back:hover{color:var(--gold)}
+.back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+.site-name{font-family:"Gowun Batang",serif;font-size:.9rem;color:var(--gold);letter-spacing:.18em;margin-left:auto}
+
+header{text-align:center;padding:44px 20px 36px}
+.icon-big{font-size:3rem;margin-bottom:14px}
+h1{font-family:"Gowun Batang",serif;font-size:clamp(1.4rem,4vw,2rem);letter-spacing:.06em;margin-bottom:8px}
+.sub{font-size:.8rem;color:var(--muted);letter-spacing:.18em}
+
+/* 게임 그리드 */
+main{flex:1;max-width:960px;margin:0 auto;padding:8px 20px 72px;width:100%}
+
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+
+.game-card{display:flex;flex-direction:column;align-items:center;text-decoration:none;color:inherit;
+  background:linear-gradient(145deg,#120f17,#0d0b12);
+  border:1px solid var(--line);border-radius:14px;
+  padding:28px 18px 22px;gap:12px;
+  transition:transform .3s,box-shadow .3s,border-color .3s;position:relative;overflow:hidden}
+.game-card::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,#c8a06012 0%,transparent 70%);opacity:0;transition:opacity .3s}
+.game-card:hover{transform:translateY(-5px);box-shadow:0 18px 48px #c8a06016;border-color:#c8a06055}
+.game-card:hover::after{opacity:1}
+
+.game-icon{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1a1620,#231d2a);
+  border:1px solid #c8a06035;display:flex;align-items:center;justify-content:center;
+  font-size:1.9rem;line-height:1;flex-shrink:0;transition:border-color .3s,box-shadow .3s}
+.game-card:hover .game-icon{border-color:#c8a06077;box-shadow:0 0 20px #c8a06022}
+
+.game-tag{font-size:.6rem;letter-spacing:.22em;color:var(--gold);border:1px solid #c8a06044;padding:2px 8px;border-radius:20px}
+.game-title{font-family:"Gowun Batang",serif;font-size:1rem;font-weight:700;text-align:center;line-height:1.4}
+.game-desc{font-size:.75rem;color:var(--muted);text-align:center;line-height:1.6}
+
+.game-arrow{position:absolute;bottom:12px;right:16px;color:#c8a06040;font-size:.85rem;transition:color .3s,transform .3s}
+.game-card:hover .game-arrow{color:var(--gold);transform:translateX(4px)}
+
+/* 준비중 */
+.game-card.soon{opacity:.38;pointer-events:none}
+.game-tag.wip{color:#8a7a5a;border-color:#8a7a5a44}
+
+/* 푸터 */
+footer{text-align:center;padding:24px 20px;border-top:1px solid var(--line);font-size:.68rem;color:var(--muted);letter-spacing:.15em}
+
+@media(max-width:480px){
+  .game-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .game-card{padding:22px 12px 18px}
+  .game-icon{width:60px;height:60px;font-size:1.6rem}
+  .game-title{font-size:.9rem}
+  .game-desc{font-size:.7rem}
+  .topbar{padding:14px 16px}
+}
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="back" href="index.html">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      홈으로
+    </a>
+    <span class="site-name">홍인 art class</span>
+  </div>
+
+  <header>
+    <div class="icon-big">🎮</div>
+    <h1>미술 게임</h1>
+    <div class="sub">ART GAMES · 형성평가</div>
+  </header>
+
+  <main>
+    <div class="game-grid">
+
+      <!-- ── 게임 추가 시 아래 블록을 복사해서 넣으세요 ── -->
+
+      <a class="game-card" href="pop_art_game_v2.html">
+        <div class="game-icon">🎨</div>
+        <div class="game-tag">GAME 01</div>
+        <div class="game-title">팝아트 게임</div>
+        <div class="game-desc">팝아트 스타일로 즐기는 미술 형성평가</div>
+        <span class="game-arrow">→</span>
+      </a>
+
+      <!-- 게임 2 (파일 받은 후 채울 자리) -->
+      <div class="game-card soon">
+        <div class="game-icon">🖼️</div>
+        <div class="game-tag wip">COMING SOON</div>
+        <div class="game-title">게임 2</div>
+        <div class="game-desc">준비 중이에요</div>
+      </div>
+
+      <div class="game-card soon">
+        <div class="game-icon">✏️</div>
+        <div class="game-tag wip">COMING SOON</div>
+        <div class="game-title">게임 3</div>
+        <div class="game-desc">준비 중이에요</div>
+      </div>
+
+      <div class="game-card soon">
+        <div class="game-icon">🌿</div>
+        <div class="game-tag wip">COMING SOON</div>
+        <div class="game-title">게임 4</div>
+        <div class="game-desc">준비 중이에요</div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>© 2026 홍인 art class · Maetan Middle School</footer>
+</div>
+
+<script>
+const cv=document.getElementById('bg'),x=cv.getContext('2d');
+function resize(){cv.width=innerWidth;cv.height=innerHeight}
+resize(); window.addEventListener('resize',resize);
+const pts=Array.from({length:50},()=>({
+  x:Math.random()*cv.width, y:Math.random()*cv.height,
+  r:Math.random()*1.2+.3,
+  vx:(Math.random()-.5)*.2, vy:(Math.random()-.5)*.2,
+  a:Math.random()*.38+.07
+}));
+(function tick(){
+  x.clearRect(0,0,cv.width,cv.height);
+  pts.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0||p.x>cv.width) p.vx*=-1;
+    if(p.y<0||p.y>cv.height) p.vy*=-1;
+    x.beginPath(); x.arc(p.x,p.y,p.r,0,Math.PI*2);
+    x.fillStyle=`rgba(200,160,96,${p.a})`; x.fill();
+  });
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
