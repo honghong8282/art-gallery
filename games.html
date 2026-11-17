@@ -8,63 +8,55 @@
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--gold:#c8a060;--bg:#08060a;--card:#100e14;--text:#e8d9b8;--muted:#8a7a5a;--line:#c8a06028}
+:root{--gold:#c8a060;--bg:#08060a;--text:#e8d9b8;--muted:#8a7a5a;--line:#c8a06028}
 body{background:var(--bg);color:var(--text);font-family:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;min-height:100vh}
 canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
 .wrap{position:relative;z-index:1;display:flex;flex-direction:column;min-height:100vh}
 
-/* 상단 */
-.topbar{display:flex;align-items:center;gap:12px;padding:18px 24px;border-bottom:1px solid var(--line)}
-.back{display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);font-size:.82rem;letter-spacing:.12em;transition:color .2s}
+.topbar{display:flex;align-items:center;gap:10px;padding:16px 24px;border-bottom:1px solid var(--line)}
+.back{display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--muted);font-size:.82rem;letter-spacing:.1em;transition:color .2s}
 .back:hover{color:var(--gold)}
 .back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
-.site-name{font-family:"Gowun Batang",serif;font-size:.9rem;color:var(--gold);letter-spacing:.18em;margin-left:auto}
+.site-name{font-family:"Gowun Batang",serif;font-size:.88rem;color:var(--gold);letter-spacing:.18em;margin-left:auto}
 
-header{text-align:center;padding:44px 20px 36px}
-.icon-big{font-size:3rem;margin-bottom:14px}
-h1{font-family:"Gowun Batang",serif;font-size:clamp(1.4rem,4vw,2rem);letter-spacing:.06em;margin-bottom:8px}
-.sub{font-size:.8rem;color:var(--muted);letter-spacing:.18em}
+header{text-align:center;padding:40px 20px 30px}
+.icon-big{font-size:2.6rem;margin-bottom:12px}
+h1{font-family:"Gowun Batang",serif;font-size:clamp(1.3rem,4vw,1.9rem);letter-spacing:.06em;margin-bottom:6px}
+.sub{font-size:.76rem;color:var(--muted);letter-spacing:.18em}
 
-/* 게임 그리드 */
-main{flex:1;max-width:960px;margin:0 auto;padding:8px 20px 72px;width:100%}
+main{flex:1;max-width:1000px;margin:0 auto;padding:8px 20px 64px;width:100%}
 
-.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px}
+.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
 
 .game-card{display:flex;flex-direction:column;align-items:center;text-decoration:none;color:inherit;
   background:linear-gradient(145deg,#120f17,#0d0b12);
   border:1px solid var(--line);border-radius:14px;
-  padding:28px 18px 22px;gap:12px;
+  padding:26px 16px 20px;gap:11px;
   transition:transform .3s,box-shadow .3s,border-color .3s;position:relative;overflow:hidden}
 .game-card::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,#c8a06012 0%,transparent 70%);opacity:0;transition:opacity .3s}
-.game-card:hover{transform:translateY(-5px);box-shadow:0 18px 48px #c8a06016;border-color:#c8a06055}
+.game-card:hover{transform:translateY(-5px);box-shadow:0 16px 44px #c8a06018;border-color:#c8a06055}
 .game-card:hover::after{opacity:1}
 
-.game-icon{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1a1620,#231d2a);
+.game-icon{width:68px;height:68px;border-radius:50%;background:linear-gradient(135deg,#1a1620,#231d2a);
   border:1px solid #c8a06035;display:flex;align-items:center;justify-content:center;
-  font-size:1.9rem;line-height:1;flex-shrink:0;transition:border-color .3s,box-shadow .3s}
-.game-card:hover .game-icon{border-color:#c8a06077;box-shadow:0 0 20px #c8a06022}
+  font-size:1.8rem;line-height:1;flex-shrink:0;transition:border-color .3s,box-shadow .3s}
+.game-card:hover .game-icon{border-color:#c8a06077;box-shadow:0 0 18px #c8a06022}
 
-.game-tag{font-size:.6rem;letter-spacing:.22em;color:var(--gold);border:1px solid #c8a06044;padding:2px 8px;border-radius:20px}
-.game-title{font-family:"Gowun Batang",serif;font-size:1rem;font-weight:700;text-align:center;line-height:1.4}
-.game-desc{font-size:.75rem;color:var(--muted);text-align:center;line-height:1.6}
-
-.game-arrow{position:absolute;bottom:12px;right:16px;color:#c8a06040;font-size:.85rem;transition:color .3s,transform .3s}
+.game-tag{font-size:.58rem;letter-spacing:.22em;color:var(--gold);border:1px solid #c8a06044;padding:2px 8px;border-radius:20px}
+.game-title{font-family:"Gowun Batang",serif;font-size:.95rem;font-weight:700;text-align:center;line-height:1.4}
+.game-desc{font-size:.72rem;color:var(--muted);text-align:center;line-height:1.6}
+.game-arrow{position:absolute;bottom:11px;right:14px;color:#c8a06040;font-size:.82rem;transition:color .3s,transform .3s}
 .game-card:hover .game-arrow{color:var(--gold);transform:translateX(4px)}
 
-/* 준비중 */
-.game-card.soon{opacity:.38;pointer-events:none}
-.game-tag.wip{color:#8a7a5a;border-color:#8a7a5a44}
+footer{text-align:center;padding:22px 20px;border-top:1px solid var(--line);font-size:.68rem;color:var(--muted);letter-spacing:.15em}
 
-/* 푸터 */
-footer{text-align:center;padding:24px 20px;border-top:1px solid var(--line);font-size:.68rem;color:var(--muted);letter-spacing:.15em}
-
-@media(max-width:480px){
-  .game-grid{grid-template-columns:repeat(2,1fr);gap:12px}
-  .game-card{padding:22px 12px 18px}
-  .game-icon{width:60px;height:60px;font-size:1.6rem}
-  .game-title{font-size:.9rem}
-  .game-desc{font-size:.7rem}
-  .topbar{padding:14px 16px}
+@media(max-width:520px){
+  .game-grid{grid-template-columns:repeat(2,1fr);gap:11px}
+  .game-card{padding:20px 10px 16px;gap:9px}
+  .game-icon{width:58px;height:58px;font-size:1.5rem}
+  .game-title{font-size:.86rem}
+  .game-desc{display:none}
+  .topbar{padding:13px 16px}
 }
 </style>
 </head>
@@ -89,37 +81,77 @@ footer{text-align:center;padding:24px 20px;border-top:1px solid var(--line);font
   <main>
     <div class="game-grid">
 
-      <!-- ── 게임 추가 시 아래 블록을 복사해서 넣으세요 ── -->
-
       <a class="game-card" href="pop_art_game_v2.html">
         <div class="game-icon">🎨</div>
         <div class="game-tag">GAME 01</div>
         <div class="game-title">팝아트 게임</div>
-        <div class="game-desc">팝아트 스타일로 즐기는 미술 형성평가</div>
+        <div class="game-desc">팝아트 작품을 감상하고 개념을 익혀요</div>
         <span class="game-arrow">→</span>
       </a>
 
-      <!-- 게임 2 (파일 받은 후 채울 자리) -->
-      <div class="game-card soon">
-        <div class="game-icon">🖼️</div>
-        <div class="game-tag wip">COMING SOON</div>
-        <div class="game-title">게임 2</div>
-        <div class="game-desc">준비 중이에요</div>
-      </div>
+      <a class="game-card" href="danwon_mystery_game.html">
+        <div class="game-icon">🔍</div>
+        <div class="game-tag">GAME 02</div>
+        <div class="game-title">단원 풍속도첩의 비밀</div>
+        <div class="game-desc">조선 풍속화 속 숨겨진 비밀을 풀어요</div>
+        <span class="game-arrow">→</span>
+      </a>
 
-      <div class="game-card soon">
-        <div class="game-icon">✏️</div>
-        <div class="game-tag wip">COMING SOON</div>
-        <div class="game-title">게임 3</div>
-        <div class="game-desc">준비 중이에요</div>
-      </div>
+      <a class="game-card" href="ceramic_game.html">
+        <div class="game-icon">🏺</div>
+        <div class="game-tag">GAME 03</div>
+        <div class="game-title">도자기, 다시 빚다</div>
+        <div class="game-desc">도자기의 역사와 기법을 형성평가로</div>
+        <span class="game-arrow">→</span>
+      </a>
 
-      <div class="game-card soon">
-        <div class="game-icon">🌿</div>
-        <div class="game-tag wip">COMING SOON</div>
-        <div class="game-title">게임 4</div>
-        <div class="game-desc">준비 중이에요</div>
-      </div>
+      <a class="game-card" href="color_adventure_game.html">
+        <div class="game-icon">🌈</div>
+        <div class="game-tag">GAME 04</div>
+        <div class="game-title">색상 탐험</div>
+        <div class="game-desc">컬러 헌터가 되어 색의 세계를 탐험해요</div>
+        <span class="game-arrow">→</span>
+      </a>
+
+      <a class="game-card" href="color_studio_game.html">
+        <div class="game-icon">🖌️</div>
+        <div class="game-tag">GAME 05</div>
+        <div class="game-title">컬러 스튜디오</div>
+        <div class="game-desc">신입 디자이너가 되어 색채 미션 도전</div>
+        <span class="game-arrow">→</span>
+      </a>
+
+      <a class="game-card" href="ai_prompt_game.html">
+        <div class="game-icon">🤖</div>
+        <div class="game-tag">GAME 06</div>
+        <div class="game-title">AI 프롬프트 맞히기</div>
+        <div class="game-desc">AI가 그린 그림의 프롬프트를 맞춰요</div>
+        <span class="game-arrow">→</span>
+      </a>
+
+      <a class="game-card" href="julian_opie_quiz.html">
+        <div class="game-icon">🕶️</div>
+        <div class="game-tag">GAME 07</div>
+        <div class="game-title">줄리아 오피 퀴즈</div>
+        <div class="game-desc">줄리아 오피와 팝아트 개념 퀴즈</div>
+        <span class="game-arrow">→</span>
+      </a>
+
+      <a class="game-card" href="art_quiz_game.html">
+        <div class="game-icon">📚</div>
+        <div class="game-tag">GAME 08</div>
+        <div class="game-title">미술사 퀴즈</div>
+        <div class="game-desc">미술 작가와 작품 탐구 퀴즈</div>
+        <span class="game-arrow">→</span>
+      </a>
+
+      <a class="game-card" href="art_quiz_beginner.html">
+        <div class="game-icon">🌱</div>
+        <div class="game-tag">GAME 09</div>
+        <div class="game-title">미술사 퀴즈 게임</div>
+        <div class="game-desc">미술사 기초 개념 퀴즈</div>
+        <span class="game-arrow">→</span>
+      </a>
 
     </div>
   </main>

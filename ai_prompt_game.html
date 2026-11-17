@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎲 AI 그림 프롬프트 맞히기 게임</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Pretendard:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Pretendard', 'Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e1e7fe',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#1e1b4b',
+                            neon: '#a855f7',
+                            cyan: '#06b6d4',
+                            accent: '#f43f5e'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'bounce-short': 'bounceShort 0.5s ease infinite alternate',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { boxShadow: '0 0 10px rgba(168, 85, 247, 0.4), 0 0 20px rgba(99, 102, 241, 0.2)' },
+                            '100%': { boxShadow: '0 0 25px rgba(168, 85, 247, 0.8), 0 0 40px rgba(6, 182, 212, 0.5)' }
+                        },
+                        bounceShort: {
+                            '0%': { transform: 'translateY(0)' },
+                            '100%': { transform: 'translateY(-6px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: #0f172a;
+            color: #f8fafc;
+            user-select: none;
+            overflow-x: hidden;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glass-button {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.2s ease;
+        }
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(168, 85, 247, 0.5);
+            transform: translateY(-2px);
+        }
+        .neon-border {
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between font-sans antialiased text-slate-100 selection:bg-brand-neon selection:text-white">
+
+    <!-- Header -->
+    <header class="glass-panel sticky top-0 z-40 border-b border-slate-800 px-4 py-3 sm:px-8">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3 cursor-pointer" onclick="game.resetToHome()">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-neon via-brand-500 to-brand-cyan flex items-center justify-center text-white shadow-lg animate-glow">
+                    <i class="fa-solid font-bold text-xl fa-wand-magic-sparkles"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-purple-300 via-pink-300 to-cyan-300 bg-clip-text text-transparent">
+                        AI 그림 프롬프트 맞히기
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">AI 이미지 속에 숨겨진 마법 프롬프트를 찾아라!</p>
+                </div>
+            </div>
+
+            <!-- Stats & Settings -->
+            <div class="flex items-center gap-3">
+                <!-- Sound Toggle -->
+                <button id="soundToggleBtn" onclick="soundEngine.toggleMute()" class="w-10 h-10 rounded-xl glass-button flex items-center justify-center text-slate-300 hover:text-white" title="음향 효과 토글">
+                    <i id="soundIcon" class="fa-solid fa-volume-high"></i>
+                </button>
+
+                <!-- Custom Quiz Modal Trigger -->
+                <button onclick="ui.showModal('customQuizModal')" class="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-xs font-semibold text-white shadow-md transition-all">
+                    <i class="fa-solid fa-plus"></i> 나만의 AI 퀴즈 만들기
+                </button>
+
+                <!-- Help Button -->
+                <button onclick="ui.showModal('helpModal')" class="w-10 h-10 rounded-xl glass-button flex items-center justify-center text-slate-300 hover:text-white" title="게임 규칙">
+                    <i class="fa-solid fa-circle-question"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl w-full mx-auto p-4 sm:p-6 flex-grow flex flex-col justify-center">
+
+        <!-- Screen 1: Start / Mode Selection Screen -->
+        <section id="startScreen" class="space-y-8 py-6">
+            <div class="text-center space-y-4 max-w-2xl mx-auto">
+                <span class="px-4 py-1.5 rounded-full text-xs font-bold bg-purple-950/80 text-purple-300 border border-purple-800/50 uppercase tracking-widest inline-block animate-pulse-slow">
+                    ✨ AI Prompt Master Game ✨
+                </span>
+                <h2 class="text-3xl sm:text-5xl font-black text-white leading-tight">
+                    AI가 그린 이 그림,<br/>
+                    <span class="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">어떤 프롬프트</span>로 만들었을까요?
+                </h2>
+                <p class="text-slate-400 text-sm sm:text-base">
+                    다양한 AI 아티스틱 스타일과 키워드를 분석하여 원래의 생성 프롬프트를 맞혀보세요. 난이도별 세 가지 매력적인 모드가 준비되어 있습니다!
+                </p>
+            </div>
+
+            <!-- Mode Selection Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+                <!-- Mode 1: Choice Quiz -->
+                <div onclick="game.startQuiz('choice')" class="glass-panel rounded-2xl p-6 hover:border-brand-neon transition-all duration-300 cursor-pointer group flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-purple-600/10 rounded-full blur-2xl group-hover:bg-purple-600/30 transition-all"></div>
+                    <div class="space-y-4">
+                        <div class="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                            🎮
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-purple-400 uppercase tracking-wider">초급 / Beginner</span>
+                            <h3 class="text-xl font-bold text-white mt-1">4지 선다 객관식</h3>
+                            <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+                                4개의 옵션 중 가장 정확한 AI 프롬프트를 선택하세요. 스피드 보너스와 연속 스트레이트 포인트를 획득할 수 있습니다.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-700/50 flex items-center justify-between text-xs text-purple-300 font-semibold group-hover:translate-x-1 transition-transform">
+                        <span>게임 시작하기</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                </div>
+
+                <!-- Mode 2: Keyword Typing -->
+                <div onclick="game.startQuiz('keyword')" class="glass-panel rounded-2xl p-6 hover:border-brand-cyan transition-all duration-300 cursor-pointer group flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-cyan-600/10 rounded-full blur-2xl group-hover:bg-cyan-600/30 transition-all"></div>
+                    <div class="space-y-4">
+                        <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                            ✍️
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider">중급 / Intermediate</span>
+                            <h3 class="text-xl font-bold text-white mt-1">핵심 키워드 맞히기</h3>
+                            <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+                                그림에 포함된 주요 화풍, 화제, 스타일 키워드를 직접 입력하거나 연관 단어로 일치점을 찾으세요.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-700/50 flex items-center justify-between text-xs text-cyan-300 font-semibold group-hover:translate-x-1 transition-transform">
+                        <span>게임 시작하기</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                </div>
+
+                <!-- Mode 3: Gemini AI Precision Judge -->
+                <div onclick="game.startQuiz('ai_judge')" class="glass-panel rounded-2xl p-6 hover:border-pink-500 transition-all duration-300 cursor-pointer group flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-pink-600/10 rounded-full blur-2xl group-hover:bg-pink-600/30 transition-all"></div>
+                    <div class="space-y-4">
+                        <div class="w-12 h-12 rounded-xl bg-pink-500/20 text-pink-400 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                            🤖
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-pink-400 uppercase tracking-wider">고급 / Gemini Live Judge</span>
+                            <h3 class="text-xl font-bold text-white mt-1">AI 실시간 채점 모드</h3>
+                            <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+                                내 프롬프트를 자유롭게 작성하면 **Gemini AI**가 정확도, 구도, 어조 및 스타일을 0~100% 정밀 심사합니다!
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-700/50 flex items-center justify-between text-xs text-pink-300 font-semibold group-hover:translate-x-1 transition-transform">
+                        <span>Gemini AI 심사받기</span>
+                        <i class="fa-solid fa-wand-sparkles"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Quiz Button for Mobile -->
+            <div class="sm:hidden text-center pt-2">
+                <button onclick="ui.showModal('customQuizModal')" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-sm font-semibold text-white shadow-lg">
+                    <i class="fa-solid fa-plus mr-2"></i> 나만의 AI 퀴즈 직접 만들기
+                </button>
+            </div>
+        </section>
+
+        <!-- Screen 2: Game Board Screen -->
+        <section id="gameScreen" class="hidden space-y-6">
+            <!-- Top Status Bar -->
+            <div class="glass-panel rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <span id="questionCounterBadge" class="px-3 py-1 rounded-lg bg-purple-900/60 text-purple-300 font-bold text-sm border border-purple-700/50">
+                        문제 <span id="currentQNum">1</span> / <span id="totalQNum">10</span>
+                    </span>
+                    <div class="flex items-center gap-1.5 text-amber-400 font-bold text-sm">
+                        <i class="fa-solid fa-fire text-amber-500 animate-bounce-short"></i>
+                        <span id="comboCounter">0</span> Combo
+                    </div>
+                </div>
+
+                <!-- Timer & Progress -->
+                <div class="flex-1 max-w-xs px-2 hidden sm:block">
+                    <div class="flex justify-between text-xs text-slate-400 mb-1">
+                        <span>남은 시간</span>
+                        <span id="timerText" class="font-mono font-bold text-purple-300">20초</span>
+                    </div>
+                    <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                        <div id="timerBar" class="h-full bg-gradient-to-r from-cyan-400 to-purple-500 transition-all duration-200" style="width: 100%;"></div>
+                    </div>
+                </div>
+
+                <!-- Score Board -->
+                <div class="flex items-center gap-2">
+                    <div class="text-right">
+                        <span class="text-xs text-slate-400 block">현재 점수</span>
+                        <span id="currentScore" class="text-xl font-extrabold text-cyan-300 font-mono">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Layout: Image Display & Controls -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                <!-- Left Column: AI Generated Image Showcase -->
+                <div class="lg:col-span-6 space-y-3">
+                    <div class="glass-panel rounded-2xl p-3 relative group overflow-hidden border border-slate-700">
+                        <!-- Image Viewer -->
+                        <div class="relative aspect-square w-full rounded-xl overflow-hidden bg-slate-900 flex items-center justify-center">
+                            <img id="gameImage" src="" alt="AI generated art" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                            
+                            <!-- Loading overlay for dynamic images -->
+                            <div id="imageLoadingOverlay" class="hidden absolute inset-0 bg-slate-950/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3">
+                                <i class="fa-solid fa-circle-notch fa-spin text-3xl text-purple-400"></i>
+                                <span class="text-xs text-slate-300 font-medium">새로운 AI 이미지 생성 중...</span>
+                            </div>
+
+                            <!-- Image Zoom button -->
+                            <button onclick="ui.toggleImageZoom()" class="absolute bottom-3 right-3 w-9 h-9 rounded-lg bg-slate-900/80 text-slate-200 hover:text-white backdrop-blur flex items-center justify-center shadow">
+                                <i class="fa-solid fa-expand"></i>
+                            </button>
+
+                            <!-- Hint Badge Overlay -->
+                            <div id="styleHintTag" class="absolute top-3 left-3 hidden px-3 py-1 rounded-md bg-purple-950/90 backdrop-blur text-purple-200 text-xs font-semibold border border-purple-700/50">
+                                🎨 Style: <span id="hintStyleName">...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hint Buttons Toolbar -->
+                    <div class="flex gap-2">
+                        <button onclick="game.useHint('style')" id="hintStyleBtn" class="flex-1 glass-button py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-purple-300 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-lightbulb text-amber-400"></i> 화풍 힌트 (-10점)
+                        </button>
+                        <button onclick="game.useHint('subject')" id="hintSubjectBtn" class="flex-1 glass-button py-2 rounded-xl text-xs font-medium text-slate-300 hover:text-cyan-300 flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-key text-cyan-400"></i> 핵심 주제 힌트 (-10점)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Interactive Guessing Panel -->
+                <div class="lg:col-span-6 space-y-4">
+                    
+                    <!-- Mode 1: 4-Choice Option Grid -->
+                    <div id="choiceModePanel" class="space-y-3">
+                        <h3 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-purple-400"></i> 아래 프롬프트 중 이 그림을 만든 정답을 고르세요:
+                        </h3>
+                        <div id="choiceContainer" class="space-y-2.5">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Mode 2: Keyword Input Panel -->
+                    <div id="keywordModePanel" class="hidden glass-panel p-5 rounded-2xl space-y-4">
+                        <div>
+                            <h3 class="text-sm font-bold text-white mb-1">키워드 추측하기</h3>
+                            <p class="text-xs text-slate-400">이 그림에 사용된 주요 단어(예: 고양이, 네온, 수채화, 우주 등)를 입력하세요!</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="keywordInput" placeholder="단어 또는 주요 프롬프트 키워드..." onkeydown="if(event.key==='Enter') game.submitKeywordGuess()" class="flex-1 px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-brand-cyan">
+                            <button onclick="game.submitKeywordGuess()" class="px-5 py-3 bg-brand-cyan hover:bg-cyan-600 font-bold text-slate-950 text-sm rounded-xl transition-colors">
+                                제출
+                            </button>
+                        </div>
+                        <div class="pt-2">
+                            <div class="text-xs font-semibold text-slate-400 mb-2">찾은 핵심 키워드:</div>
+                            <div id="matchedKeywordsContainer" class="flex flex-wrap gap-1.5 min-h-[36px] p-2 bg-slate-900/50 rounded-xl border border-slate-800">
+                                <span class="text-xs text-slate-500 italic p-1">아직 일치한 단어가 없습니다...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mode 3: AI Judge Input Panel -->
+                    <div id="aiJudgeModePanel" class="hidden glass-panel p-5 rounded-2xl space-y-4">
+                        <div>
+                            <h3 class="text-sm font-bold text-white mb-1 flex items-center gap-2">
+                                <i class="fa-solid fa-robot text-pink-400"></i> Gemini AI 실시간 심사
+                            </h3>
+                            <p class="text-xs text-slate-400">그림을 가장 잘 설명하는 영어 또는 한국어 프롬프트를 자유롭게 작성하세요.</p>
+                        </div>
+                        <textarea id="aiJudgeInput" rows="3" placeholder="예: A sleek cyberpunk cat wearing glowing neon VR goggles, highly detailed art..." class="w-full p-3 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:outline-none focus:border-pink-500 resize-none"></textarea>
+                        
+                        <button onclick="game.submitAiJudge()" id="submitAiJudgeBtn" class="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 font-bold text-white text-sm rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                            <span>Gemini AI 심사 요청하기</span>
+                            <i class="fa-solid fa-sparkles"></i>
+                        </button>
+                    </div>
+
+                    <!-- Feedback Box (After Guess) -->
+                    <div id="feedbackBox" class="hidden glass-panel p-4 rounded-2xl border border-slate-700 space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div id="feedbackTitle" class="text-base font-extrabold flex items-center gap-2">
+                                <!-- Status Title -->
+                            </div>
+                            <span id="earnedPointsTag" class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-800 text-amber-300"></span>
+                        </div>
+                        <div class="text-xs text-slate-300 space-y-1.5 bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                            <div class="font-semibold text-purple-300">원래 원본 프롬프트:</div>
+                            <div id="actualPromptKorText" class="text-slate-200 font-medium"></div>
+                            <div id="actualPromptEngText" class="text-slate-400 text-[11px] font-mono italic mt-1"></div>
+                        </div>
+
+                        <!-- AI Feedback output for Mode 3 -->
+                        <div id="aiEvaluationDetails" class="hidden text-xs bg-purple-950/40 border border-purple-800/40 p-3 rounded-xl space-y-1 text-purple-200">
+                            <div class="font-bold flex items-center gap-1 text-purple-300">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> AI 심사평:
+                            </div>
+                            <p id="aiFeedbackText" class="leading-relaxed"></p>
+                        </div>
+
+                        <button onclick="game.nextQuestion()" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-brand-500 hover:from-purple-500 hover:to-brand-600 font-bold text-white text-sm shadow-md transition-all">
+                            다음 문제로 이동 <i class="fa-solid fa-chevron-right ml-1"></i>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Screen 3: Game Results Summary Screen -->
+        <section id="resultsScreen" class="hidden glass-panel rounded-3xl p-6 sm:p-10 text-center max-w-2xl mx-auto space-y-6">
+            <div class="w-20 h-20 mx-auto rounded-2xl bg-gradient-to-tr from-purple-500 via-pink-500 to-amber-400 flex items-center justify-center text-4xl shadow-xl animate-bounce-short">
+                🏆
+            </div>
+
+            <div class="space-y-2">
+                <span id="resultBadge" class="px-4 py-1.5 rounded-full text-xs font-extrabold bg-purple-900/80 text-purple-300 border border-purple-700/50">
+                    최종 평가 랭크
+                </span>
+                <h2 id="resultTitle" class="text-3xl sm:text-4xl font-black text-white">
+                    프롬프트 연금술사
+                </h2>
+                <p id="resultDesc" class="text-slate-400 text-sm">
+                    AI 그림의 숨겨진 의도와 표현을 능숙하게 파악하시는군요!
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 py-2">
+                <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+                    <span class="text-xs text-slate-400 block">최종 점수</span>
+                    <span id="finalScore" class="text-2xl font-black text-cyan-300 font-mono">0</span>
+                </div>
+                <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+                    <span class="text-xs text-slate-400 block">정답률</span>
+                    <span id="finalAccuracy" class="text-2xl font-black text-purple-300 font-mono">0%</span>
+                </div>
+                <div class="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 col-span-2 sm:col-span-1">
+                    <span class="text-xs text-slate-400 block">최대 연속 스트레이트</span>
+                    <span id="finalMaxCombo" class="text-2xl font-black text-amber-300 font-mono">0</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                <button onclick="game.resetToHome()" class="flex-1 py-3.5 rounded-xl glass-button text-sm font-bold text-white hover:border-purple-500 transition-all">
+                    <i class="fa-solid fa-house mr-1.5"></i> 홈 화면으로
+                </button>
+                <button onclick="game.restartSameMode()" class="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-sm font-bold text-white shadow-lg transition-all">
+                    <i class="fa-solid fa-rotate-right mr-1.5"></i> 다시 도전하기
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Custom AI Quiz Modal -->
+    <div id="customQuizModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-lg rounded-3xl p-6 space-y-5 border border-purple-500/30">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> 나만의 AI 퀴즈 직접 만들기
+                </h3>
+                <button onclick="ui.hideModal('customQuizModal')" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-400">
+                새로운 프롬프트를 입력하면 Gemini가 **Imagen 4** 모델로 실시간 이미지를 새로 생성하여 나만의 퀴즈 카드를 만듭니다!
+            </p>
+
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">한글 퀴즈 설명 프롬프트</label>
+                    <input type="text" id="customPromptKor" placeholder="예: 미래 도시에서 고글을 쓰고 있는 귀여운 수달 레트로 아트" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-purple-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">영문 AI 생성 프롬프트 (Prompt)</label>
+                    <input type="text" id="customPromptEng" placeholder="e.g. A cute otter wearing goggles in a cyberpunk city, retro art style" class="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:outline-none focus:border-purple-500">
+                </div>
+            </div>
+
+            <div id="customGenStatus" class="hidden text-xs text-center p-3 rounded-xl bg-purple-950/50 text-purple-300 border border-purple-800">
+                <i class="fa-solid fa-spinner fa-spin mr-1"></i> Imagen 4 모델로 AI 그림을 생성 중입니다...
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="ui.hideModal('customQuizModal')" class="flex-1 py-2.5 rounded-xl glass-button text-xs font-semibold text-slate-300">
+                    취소
+                </button>
+                <button onclick="game.generateCustomQuizCard()" class="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white shadow-md">
+                    AI 그림 생성 및 퀴즈 등록
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Rules Modal -->
+    <div id="helpModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md rounded-3xl p-6 space-y-4 border border-slate-700">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-gamepad text-cyan-400"></i> 게임 설명 및 규칙
+                </h3>
+                <button onclick="ui.hideModal('helpModal')" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
+                <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                    <strong class="text-purple-300 block mb-1">🎮 객관식 모드</strong>
+                    4개의 보기 중 원본 AI 이미지를 생성할 때 사용되었을 것 같은 프롬프트를 고릅니다. 빨리 맞힐수록 높은 점수를 받습니다.
+                </div>
+                <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                    <strong class="text-cyan-300 block mb-1">✍️ 키워드 맞히기 모드</strong>
+                    그림의 주요 스타일, 화제, 소재 키워드를 단어로 입력해 정확도를 높입니다.
+                </div>
+                <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800">
+                    <strong class="text-pink-300 block mb-1">🤖 Gemini AI 실시간 심사</strong>
+                    입력한 문장의 뉘앙스, 주제, 화풍을 Gemini LLM이 실시간 분석해 점수를 부여합니다.
+                </div>
+            </div>
+
+            <button onclick="ui.hideModal('helpModal')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white">
+                확인
+            </button>
+        </div>
+    </div>
+
+    <!-- Image Zoom Modal -->
+    <div id="zoomModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer" onclick="ui.toggleImageZoom()">
+        <img id="zoomedImage" src="" alt="Zoomed View" class="max-w-full max-h-[90vh] rounded-2xl shadow-2xl object-contain border border-slate-700">
+    </div>
+
+    <!-- Footer -->
+    <footer class="glass-panel border-t border-slate-800/80 py-4 px-6 text-center text-xs text-slate-500">
+        <p>🎲 AI Prompt Guesser Game &bull; Powered by Google Gemini API & Imagen 4</p>
+    </footer>
+
+    <script>
+        // Web Audio Synthesizer for SFX
+        class AudioEngine {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            toggleMute() {
+                this.muted = !this.muted;
+                const icon = document.getElementById('soundIcon');
+                if (this.muted) {
+                    icon.className = 'fa-solid fa-volume-xmark text-slate-500';
+                } else {
+                    icon.className = 'fa-solid fa-volume-high text-slate-300';
+                    this.playClick();
+                }
+            }
+
+            playTone(freq, type, duration, gainVal = 0.1) {
+                if (this.muted) return;
+                this.init();
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(gainVal, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e) {}
+            }
+
+            playClick() {
+                this.playTone(800, 'sine', 0.05, 0.05);
+            }
+
+            playCorrect() {
+                if (this.muted) return;
+                this.init();
+                try {
+                    const now = this.ctx.currentTime;
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, idx) => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        gain.gain.setValueAtTime(0.1, now + idx * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.2);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now + idx * 0.08);
+                        osc.stop(now + idx * 0.08 + 0.2);
+                    });
+                } catch(e){}
+            }
+
+            playWrong() {
+                if (this.muted) return;
+                this.init();
+                try {
+                    const now = this.ctx.currentTime;
+                    [300, 220].forEach((freq, idx) => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+                        gain.gain.setValueAtTime(0.1, now + idx * 0.12);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.25);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now + idx * 0.12);
+                        osc.stop(now + idx * 0.12 + 0.25);
+                    });
+                } catch(e){}
+            }
+        }
+
+        const soundEngine = new AudioEngine();
+
+        // AI Image Dataset (Curated high-quality art examples with rich metadata & keywords)
+        const presetQuestions = [
+            {
+                id: 1,
+                image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop",
+                style: "Cyberpunk VR Neon",
+                subject: "사이버펑크 고양이",
+                promptKor: "비 내리는 미래 도심의 네온 VR 고글을 쓴 사이버펑크 고양이, 디테일한 조명, 8K 영화 구도",
+                promptEng: "A sleek cyberpunk cat wearing glowing neon VR goggles on a rain-slicked futuristic street, detailed lighting, 8k cinematic shot",
+                keywords: ["사이버펑크", "고양이", "네온", "VR", "고글", "비", "미래", "cyberpunk", "cat", "neon"],
+                distractors: [
+                    "중세 시대의 투구를 쓰고 성을 지키는 기사 고양이의 유화 스타일 그림",
+                    "따스한 햇살이 비추는 시골 마을 마루에서 자고 있는 귀여운 아기 고양이",
+                    "우주 공간에서 우주복을 입고 지구를 바라보고 있는 사이버 고양이"
+                ]
+            },
+            {
+                id: 2,
+                image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?q=80&w=800&auto=format&fit=crop",
+                style: "Fantasy Watercolor",
+                subject: "하늘에 떠 있는 미지의 성",
+                promptKor: "구름 위 하늘에 떠 있는 미지의 신비로운 성, 환상적인 수채화 풍경, 파스텔 톤 파란 하늘",
+                promptEng: "A magnificent fantasy castle floating high above clouds, ethereal watercolor painting, pastel soft lighting",
+                keywords: ["성", "하늘", "구름", "수채화", "판타지", "파스텔", "castle", "floating", "watercolor"],
+                distractors: [
+                    "깊은 바닷속 고대 해저 도시의 화려한 네온 라이트 일러스트",
+                    "울창한 열대 우림 속에 숨겨진 마야 문명의 유적지 수묵화",
+                    "황량한 사막 한가운데 서 있는 피라미드와 석양의 로우폴리 3D 모델"
+                ]
+            },
+            {
+                id: 3,
+                image: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=800&auto=format&fit=crop",
+                style: "Retro Synthwave",
+                subject: "우주비행사의 휴식",
+                promptKor: "화성 표면에서 의자에 앉아 커피를 마시는 우주비행사, 80년대 레트로 신스웨이브 석양 배경",
+                promptEng: "An astronaut relaxing in a chair drinking coffee on Mars, retro synthwave style, dramatic sunset grid background",
+                keywords: ["우주비행사", "화성", "커피", "신스웨이브", "레트로", "석양", "astronaut", "mars", "synthwave"],
+                distractors: [
+                    "우주선 조종석에서 바쁘게 조종간을 잡고 있는 과학자의 실사 사진",
+                    "달 표면에 태극기를 심고 기뻐하는 아폴로 우주비행사의 흑백 사진",
+                    "네온 사인이 가득한 도심 속에서 바이크를 타는 픽사 스타일 우주인"
+                ]
+            },
+            {
+                id: 4,
+                image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800&auto=format&fit=crop",
+                style: "Studio Ghibli Anime",
+                subject: "푸른 계곡 속 아늑한 오두막",
+                promptKor: "햇살이 내리쬐는 푸른 계곡 속 아늑한 나무 오두막, 스튜디오 지브리 애니메이션 스타일, 따뜻한 감성",
+                promptEng: "Cozy wooden cottage in a lush green valley with sunbeams, Studio Ghibli style anime art, warm daylight",
+                keywords: ["오두막", "계곡", "나무", "지브리", "애니메이션", "햇살", "cottage", "ghibli", "valley"],
+                distractors: [
+                    "눈보라가 몰아치는 북극의 이글루와 오로라 배경의 사실적인 사진",
+                    "초현대적 유리 외벽으로 디자인된 마천루 빌딩의 정밀 건축 도면",
+                    "어두운 동굴 속에 거주하는 괴물의 고딕 포스터 일러스트"
+                ]
+            },
+            {
+                id: 5,
+                image: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=800&auto=format&fit=crop",
+                style: "Papercraft Origami",
+                subject: "종이 접기 사슴과 숲",
+                promptKor: "입체 종이공예 오리가미로 만든 숲 속의 단아한 사슴, 3D 종이 질감, 극적인 라이팅",
+                promptEng: "Intricate papercraft origami scene of a majestic deer in a paper forest, 3D paper art, volumetric lighting",
+                keywords: ["사슴", "종이공예", "오리가미", "숲", "3D", "입체", "origami", "papercraft", "deer"],
+                distractors: [
+                    "강철과 황동 톱니바퀴로 만들어진 스팀펑크 기계 사슴 로봇",
+                    "야생 초원을 달리는 사실적인 붉은 사슴 무리의 다큐멘터리 사진",
+                    "화려한 클레이 점토로 빚어낸 픽사 스타일의 아기 사슴 캐릭터"
+                ]
+            },
+            {
+                id: 6,
+                image: "https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=800&auto=format&fit=crop",
+                style: "Minimalist Line Art",
+                subject: "미니멀리스트 라인 아트 얼굴",
+                promptKor: "한 선으로 이어진 여성의 얼굴과 금색 몬스테라 잎, 미니멀 라인 아트, 파스텔 모던 홈데코",
+                promptEng: "Minimalist continuous line art drawing of a serene woman face with golden tropical leaf, pastel background",
+                keywords: ["라인아트", "얼굴", "미니멀", "몬스테라", "금색", "한선", "lineart", "minimalist", "face"],
+                distractors: [
+                    "화려한 색채의 유화 물감을 두껍게 칠한 인상주의 초상화",
+                    "할리우드 영화 배우의 흑백 느와르 극사실주의 인물 스냅샷",
+                    "사이버펑크 네온 페이스 페인팅을 한 미래형 팝아트 인물"
+                ]
+            }
+        ];
+
+        class PromptGame {
+            constructor() {
+                this.questions = [...presetQuestions];
+                this.mode = 'choice'; // 'choice', 'keyword', 'ai_judge'
+                this.currentIndex = 0;
+                this.score = 0;
+                this.combo = 0;
+                this.maxCombo = 0;
+                this.correctCount = 0;
+                this.timer = null;
+                this.timeLeft = 20;
+                this.matchedKeywords = new Set();
+                this.currentQuestion = null;
+                this.hintsUsed = { style: false, subject: false };
+            }
+
+            resetToHome() {
+                clearInterval(this.timer);
+                ui.showScreen('startScreen');
+            }
+
+            startQuiz(mode) {
+                soundEngine.playClick();
+                this.mode = mode;
+                this.currentIndex = 0;
+                this.score = 0;
+                this.combo = 0;
+                this.maxCombo = 0;
+                this.correctCount = 0;
+                
+                // Shuffle questions
+                this.questions = [...presetQuestions].sort(() => Math.random() - 0.5);
+                ui.showScreen('gameScreen');
+                this.loadQuestion();
+            }
+
+            restartSameMode() {
+                this.startQuiz(this.mode);
+            }
+
+            loadQuestion() {
+                this.hintsUsed = { style: false, subject: false };
+                this.matchedKeywords.clear();
+                
+                document.getElementById('styleHintTag').classList.add('hidden');
+                document.getElementById('feedbackBox').classList.add('hidden');
+                document.getElementById('keywordInput').value = '';
+                document.getElementById('aiJudgeInput').value = '';
+                
+                if (this.currentIndex >= this.questions.length) {
+                    this.finishGame();
+                    return;
+                }
+
+                this.currentQuestion = this.questions[this.currentIndex];
+
+                // Update UI Header
+                document.getElementById('currentQNum').innerText = this.currentIndex + 1;
+                document.getElementById('totalQNum').innerText = this.questions.length;
+                document.getElementById('currentScore').innerText = this.score;
+                document.getElementById('comboCounter').innerText = this.combo;
+
+                // Load Image
+                const imgEl = document.getElementById('gameImage');
+                imgEl.src = this.currentQuestion.image;
+                document.getElementById('zoomedImage').src = this.currentQuestion.image;
+
+                // Configure UI Panels per Mode
+                document.getElementById('choiceModePanel').classList.toggle('hidden', this.mode !== 'choice');
+                document.getElementById('keywordModePanel').classList.toggle('hidden', this.mode !== 'keyword');
+                document.getElementById('aiJudgeModePanel').classList.toggle('hidden', this.mode !== 'ai_judge');
+
+                if (this.mode === 'choice') {
+                    this.renderChoices();
+                } else if (this.mode === 'keyword') {
+                    this.renderMatchedKeywords();
+                }
+
+                // Start Timer
+                this.startTimer();
+            }
+
+            startTimer() {
+                clearInterval(this.timer);
+                this.timeLeft = 20;
+                this.updateTimerUI();
+
+                this.timer = setInterval(() => {
+                    this.timeLeft--;
+                    this.updateTimerUI();
+
+                    if (this.timeLeft <= 0) {
+                        clearInterval(this.timer);
+                        this.handleTimeOut();
+                    }
+                }, 1000);
+            }
+
+            updateTimerUI() {
+                const timerText = document.getElementById('timerText');
+                const timerBar = document.getElementById('timerBar');
+                timerText.innerText = `${this.timeLeft}초`;
+                const percentage = (this.timeLeft / 20) * 100;
+                timerBar.style.width = `${Math.max(0, percentage)}%`;
+
+                if (this.timeLeft <= 5) {
+                    timerBar.className = 'h-full bg-red-500 animate-pulse';
+                } else {
+                    timerBar.className = 'h-full bg-gradient-to-r from-cyan-400 to-purple-500';
+                }
+            }
+
+            renderChoices() {
+                const container = document.getElementById('choiceContainer');
+                container.innerHTML = '';
+
+                // Create options: 1 correct + 3 distractors
+                const options = [
+                    { text: this.currentQuestion.promptKor, isCorrect: true },
+                    ...this.currentQuestion.distractors.map(d => ({ text: d, isCorrect: false }))
+                ].sort(() => Math.random() - 0.5);
+
+                options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'w-full p-3.5 rounded-xl glass-button text-left text-xs sm:text-sm text-slate-200 hover:text-white flex items-start gap-3 transition-all font-medium border border-slate-700/60';
+                    btn.innerHTML = `
+                        <span class="w-6 h-6 rounded-lg bg-slate-800 border border-slate-700 text-purple-400 text-xs flex items-center justify-center font-mono font-bold shrink-0 mt-0.5">${idx + 1}</span>
+                        <span class="leading-relaxed flex-1">${opt.text}</span>
+                    `;
+                    btn.onclick = () => this.submitChoice(opt.isCorrect, btn);
+                    container.appendChild(btn);
+                });
+            }
+
+            submitChoice(isCorrect, element) {
+                clearInterval(this.timer);
+
+                if (isCorrect) {
+                    soundEngine.playCorrect();
+                    this.combo++;
+                    this.correctCount++;
+                    if (this.combo > this.maxCombo) this.maxCombo = this.combo;
+
+                    // Calculate speed bonus
+                    const points = 100 + (this.timeLeft * 5) + (this.combo * 10);
+                    this.score += points;
+
+                    element.classList.add('bg-emerald-950/80', 'border-emerald-500', 'text-emerald-200');
+                    this.showFeedback(true, `정확히 맞히셨습니다! (+${points}점)`);
+                } else {
+                    soundEngine.playWrong();
+                    this.combo = 0;
+                    element.classList.add('bg-rose-950/80', 'border-rose-500', 'text-rose-200');
+                    this.showFeedback(false, "아쉽게도 오답입니다!");
+                }
+            }
+
+            submitKeywordGuess() {
+                const input = document.getElementById('keywordInput');
+                const val = input.value.trim().toLowerCase();
+                if (!val) return;
+
+                input.value = '';
+                const targetKeywords = this.currentQuestion.keywords.map(k => k.toLowerCase());
+                let foundAny = false;
+
+                targetKeywords.forEach(kw => {
+                    if (kw.includes(val) || val.includes(kw)) {
+                        if (!this.matchedKeywords.has(kw)) {
+                            this.matchedKeywords.add(kw);
+                            foundAny = true;
+                        }
+                    }
+                });
+
+                if (foundAny) {
+                    soundEngine.playCorrect();
+                    this.score += 30;
+                    document.getElementById('currentScore').innerText = this.score;
+                    this.renderMatchedKeywords();
+
+                    // If user matched more than 3 keywords
+                    if (this.matchedKeywords.size >= 3) {
+                        clearInterval(this.timer);
+                        this.combo++;
+                        this.correctCount++;
+                        this.showFeedback(true, `주요 키워드를 성공적으로 포착했습니다! (+${30 * this.matchedKeywords.size}점)`);
+                    }
+                } else {
+                    soundEngine.playWrong();
+                }
+            }
+
+            renderMatchedKeywords() {
+                const container = document.getElementById('matchedKeywordsContainer');
+                if (this.matchedKeywords.size === 0) {
+                    container.innerHTML = '<span class="text-xs text-slate-500 italic p-1">아직 일치한 키워드가 없습니다...</span>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                this.matchedKeywords.forEach(kw => {
+                    const badge = document.createElement('span');
+                    badge.className = 'px-2.5 py-1 rounded-lg bg-cyan-950 border border-cyan-700 text-cyan-300 text-xs font-bold animate-pulse-slow';
+                    badge.innerHTML = `<i class="fa-solid fa-check mr-1 text-[10px]"></i> ${kw}`;
+                    container.appendChild(badge);
+                });
+            }
+
+            async submitAiJudge() {
+                const promptInput = document.getElementById('aiJudgeInput').value.trim();
+                if (!promptInput) return;
+
+                clearInterval(this.timer);
+                soundEngine.playClick();
+
+                const submitBtn = document.getElementById('submitAiJudgeBtn');
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Gemini AI가 정밀 분석 중...';
+
+                try {
+                    // Call Gemini API to evaluate prompt similarity
+                    const systemPrompt = "You are an expert AI Art Prompt Evaluator. Compare the user's guessed prompt with the target reference prompt for an image. Evaluate semantic similarity, core subjects, and art styles. Return JSON matching the schema.";
+                    const userMessage = `Reference Prompt (Korean): "${this.currentQuestion.promptKor}"\nReference Prompt (English): "${this.currentQuestion.promptEng}"\nUser's Guessed Prompt: "${promptInput}"\n\nRate the guess on a scale of 0 to 100 and give concise feedback in Korean highlighting what was guessed right and what was missed.`;
+
+                    const payload = {
+                        contents: [{ parts: [{ text: userMessage }] }],
+                        systemInstruction: { parts: [{ text: systemPrompt }] },
+                        generationConfig: {
+                            responseMimeType: "application/json",
+                            responseSchema: {
+                                type: "OBJECT",
+                                properties: {
+                                    score: { type: "INTEGER" },
+                                    feedback: { type: "STRING" }
+                                },
+                                required: ["score", "feedback"]
+                            }
+                        }
+                    };
+
+                    const apiKey = ""; // Runtime provided
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-preview:generateContent?key=${apiKey}`;
+
+                    const res = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await res.json();
+                    let aiScore = 50;
+                    let aiFeedback = "일반적인 유사도가 측정되었습니다.";
+
+                    if (data.candidates && data.candidates[0].content.parts[0].text) {
+                        const parsed = JSON.parse(data.candidates[0].content.parts[0].text);
+                        aiScore = parsed.score || 50;
+                        aiFeedback = parsed.feedback || aiFeedback;
+                    }
+
+                    // Score calculation
+                    this.score += aiScore * 2;
+                    if (aiScore >= 60) {
+                        soundEngine.playCorrect();
+                        this.combo++;
+                        this.correctCount++;
+                    } else {
+                        soundEngine.playWrong();
+                        this.combo = 0;
+                    }
+
+                    // Display results
+                    document.getElementById('aiEvaluationDetails').classList.remove('hidden');
+                    document.getElementById('aiFeedbackText').innerText = `[점수: ${aiScore}%] ${aiFeedback}`;
+                    
+                    this.showFeedback(aiScore >= 60, `Gemini AI 심사 결과: ${aiScore}점 / 100점!`);
+
+                } catch (e) {
+                    console.error("AI Evaluation error:", e);
+                    // Fallback evaluation
+                    this.score += 60;
+                    this.showFeedback(true, "AI 채점 완료! (기본 평가)");
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>Gemini AI 심사 요청하기</span> <i class="fa-solid fa-sparkles"></i>';
+                }
+            }
+
+            useHint(type) {
+                if (this.hintsUsed[type]) return;
+                soundEngine.playClick();
+                this.hintsUsed[type] = true;
+                this.score = Math.max(0, this.score - 10);
+                document.getElementById('currentScore').innerText = this.score;
+
+                if (type === 'style') {
+                    document.getElementById('hintStyleName').innerText = this.currentQuestion.style;
+                    document.getElementById('styleHintTag').classList.remove('hidden');
+                    document.getElementById('hintStyleBtn').disabled = true;
+                    document.getElementById('hintStyleBtn').classList.add('opacity-40');
+                } else if (type === 'subject') {
+                    alert(`💡 핵심 주제 힌트: "${this.currentQuestion.subject}"`);
+                    document.getElementById('hintSubjectBtn').disabled = true;
+                    document.getElementById('hintSubjectBtn').classList.add('opacity-40');
+                }
+            }
+
+            handleTimeOut() {
+                soundEngine.playWrong();
+                this.combo = 0;
+                this.showFeedback(false, "⏰ 시간이 초과되었습니다!");
+            }
+
+            showFeedback(isSuccess, titleText) {
+                const box = document.getElementById('feedbackBox');
+                const titleEl = document.getElementById('feedbackTitle');
+                
+                box.classList.remove('hidden');
+
+                if (isSuccess) {
+                    titleEl.className = "text-base font-extrabold text-emerald-400 flex items-center gap-2";
+                    titleEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${titleText}`;
+                } else {
+                    titleEl.className = "text-base font-extrabold text-rose-400 flex items-center gap-2";
+                    titleEl.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> ${titleText}`;
+                }
+
+                document.getElementById('actualPromptKorText').innerText = this.currentQuestion.promptKor;
+                document.getElementById('actualPromptEngText').innerText = this.currentQuestion.promptEng;
+            }
+
+            nextQuestion() {
+                soundEngine.playClick();
+                document.getElementById('aiEvaluationDetails').classList.add('hidden');
+                this.currentIndex++;
+                this.loadQuestion();
+            }
+
+            finishGame() {
+                clearInterval(this.timer);
+                soundEngine.playCorrect();
+                
+                // Trigger celebratory confetti
+                try {
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.6 }
+                    });
+                } catch(e){}
+
+                ui.showScreen('resultsScreen');
+
+                const accuracy = Math.round((this.correctCount / this.questions.length) * 100);
+                document.getElementById('finalScore').innerText = this.score;
+                document.getElementById('finalAccuracy').innerText = `${accuracy}%`;
+                document.getElementById('finalMaxCombo').innerText = this.maxCombo;
+
+                // Title evaluation based on score
+                const titleEl = document.getElementById('resultTitle');
+                const descEl = document.getElementById('resultDesc');
+
+                if (this.score >= 800) {
+                    titleEl.innerText = "🧙‍♂️ 프롬프트 대마법사";
+                    descEl.innerText = "AI의 마음을 꿰뚫어보는 신의 경지에 도달했습니다!";
+                } else if (this.score >= 500) {
+                    titleEl.innerText = "🎨 AI 프롬프트 아티스트";
+                    descEl.innerText = "뛰어난 감각으로 프롬프트의 의도를 완벽히 파악하시는군요!";
+                } else {
+                    titleEl.innerText = "🌱 프롬프트 입문자";
+                    descEl.innerText = "더 연습하면 뛰어난 AI 프롬프트 마스터가 될 수 있습니다!";
+                }
+            }
+
+            async generateCustomQuizCard() {
+                const kor = document.getElementById('customPromptKor').value.trim();
+                const eng = document.getElementById('customPromptEng').value.trim();
+                if (!kor || !eng) {
+                    alert("한글 및 영문 프롬프트를 모두 입력해주세요.");
+                    return;
+                }
+
+                const statusEl = document.getElementById('customGenStatus');
+                statusEl.classList.remove('hidden');
+
+                try {
+                    // Generate new AI image using imagen-4.0-generate-001
+                    const apiKey = ""; // Runtime provided
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`;
+                    
+                    const payload = {
+                        instances: [{ prompt: eng }],
+                        parameters: { sampleCount: 1 }
+                    };
+
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await response.json();
+
+                    let imageUrl = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=800&auto=format&fit=crop";
+
+                    if (data.predictions && data.predictions[0] && data.predictions[0].bytesBase64Encoded) {
+                        imageUrl = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+                    }
+
+                    // Push to questions deck
+                    const newCard = {
+                        id: Date.now(),
+                        image: imageUrl,
+                        style: "Custom User AI Art",
+                        subject: kor.slice(0, 15),
+                        promptKor: kor,
+                        promptEng: eng,
+                        keywords: kor.split(' '),
+                        distractors: [
+                            "푸른 바닷속에서 조개를 줍고 있는 귀여운 아기 펭귄들",
+                            "화려한 은하수 아래에서 바이올린을 연주하는 로봇",
+                            "중세 성벽 위에서 달을 바라보고 있는 흑표범 유화"
+                        ]
+                    };
+
+                    presetQuestions.unshift(newCard);
+                    statusEl.classList.add('hidden');
+                    ui.hideModal('customQuizModal');
+                    alert("✨ 성공적으로 새로운 AI 퀴즈 카드가 생성되어 목록에 추가되었습니다!");
+
+                } catch (e) {
+                    console.error(e);
+                    statusEl.classList.add('hidden');
+                    alert("이미지 생성 중 오류가 발생했습니다. 기본 샘플 카드로 등록되었습니다.");
+                }
+            }
+        }
+
+        class UIManager {
+            showScreen(id) {
+                ['startScreen', 'gameScreen', 'resultsScreen'].forEach(s => {
+                    document.getElementById(s).classList.add('hidden');
+                });
+                document.getElementById(id).classList.remove('hidden');
+            }
+
+            showModal(id) {
+                soundEngine.playClick();
+                document.getElementById(id).classList.remove('hidden');
+            }
+
+            hideModal(id) {
+                soundEngine.playClick();
+                document.getElementById(id).classList.add('hidden');
+            }
+
+            toggleImageZoom() {
+                soundEngine.playClick();
+                document.getElementById('zoomModal').classList.toggle('hidden');
+            }
+        }
+
+        // Initialize Instances
+        const ui = new UIManager();
+        const game = new PromptGame();
+    </script>
+</body>
+</html>

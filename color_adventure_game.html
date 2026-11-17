@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>색상 탐험: 컬러 헌터 & 미술 연구소</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;600;800;900&display=swap');
+
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        body {
+            font-family: 'Jua', 'Noto Sans KR', sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e1b4b, #311042);
+            min-height: 100vh;
+            color: #f8fafc;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(236, 72, 153, 0.5);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(236, 72, 153, 0.8);
+        }
+
+        .art-shadow {
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+        }
+
+        .text-stroke {
+            -webkit-text-stroke: 1.5px #000;
+        }
+
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .banner-glow {
+            animation: glow 1.8s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 10px rgba(251, 191, 36, 0.5), 0 0 20px rgba(244, 63, 94, 0.3); }
+            to { box-shadow: 0 0 20px rgba(244, 63, 94, 0.8), 0 0 35px rgba(168, 85, 247, 0.6); }
+        }
+
+        /* Game wrapper responsive styling */
+        #game-canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 460px;
+            height: 580px;
+            margin: 0 auto;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #ec4899, #8b5cf6);
+            color: #ffffff;
+            border-color: #f472b6;
+            box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+        }
+    </style>
+</head>
+<body class="p-2 sm:p-6 flex flex-col items-center">
+
+    <!-- Header Navigation Hub -->
+    <header class="w-full max-w-4xl mb-4 text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/40 text-xs sm:text-sm font-bold mb-2">
+            🎨 중학교 1학년 미술 교과 연계 인터랙티브 멀티모드 게임
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-rose-400 to-indigo-300 drop-shadow-lg tracking-wide">
+            색상 탐험: 컬러 헌터 & 미술 연구소
+        </h1>
+        <p class="text-slate-300 text-xs sm:text-base mt-2 max-w-xl mx-auto font-normal">
+            한색·난색, 명도·채도, 보색 개념을 3가지 게임 모드와 스펙트럼 도감으로 재미있게 배워보세요!
+        </p>
+    </header>
+
+    <!-- Mode Switcher Navigation Tabs -->
+    <nav class="w-full max-w-4xl mb-6">
+        <div class="flex flex-wrap justify-center gap-2 p-1.5 rounded-2xl glass-panel border border-slate-700 shadow-xl">
+            <button id="tab-hunter" class="tab-btn active px-4 py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all border border-transparent flex items-center gap-2">
+                <i class="fa-solid fa-gamepad text-amber-300"></i> 모드 1: 컬러 헌터 (낙하 수집)
+            </button>
+            <button id="tab-quiz" class="tab-btn px-4 py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all border border-transparent text-slate-300 hover:text-white flex items-center gap-2">
+                <i class="fa-solid fa-flask text-cyan-300"></i> 모드 2: 색채 연구소 (믹스&퀴즈)
+            </button>
+            <button id="tab-sort" class="tab-btn px-4 py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all border border-transparent text-slate-300 hover:text-white flex items-center gap-2">
+                <i class="fa-solid fa-layer-group text-emerald-300"></i> 모드 3: 스펙트럼 정렬 (명도·채도)
+            </button>
+            <a href="#guide-section" class="px-4 py-2.5 rounded-xl text-sm sm:text-base font-bold transition-all border border-slate-700 bg-slate-800/80 text-amber-300 hover:bg-slate-700 flex items-center gap-2">
+                <i class="fa-solid fa-book-open"></i> 색채 학습 가이드
+            </a>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="w-full max-w-4xl flex flex-col items-center">
+
+        <!-- ==================== MODE 1: COLOR HUNTER ARCADE ==================== -->
+        <section id="mode-hunter" class="w-full flex flex-col items-center">
+            <div id="game-canvas-container" class="rounded-3xl overflow-hidden art-shadow bg-slate-900 border-4 border-amber-300/40 flex flex-col justify-between">
+                
+                <!-- HUD Overlay -->
+                <div id="hud" class="absolute top-0 left-0 right-0 z-10 p-3 flex flex-col gap-2 pointer-events-none">
+                    <!-- Score & Timer Bar -->
+                    <div class="flex justify-between items-center px-4 py-2 rounded-2xl glass-panel text-white font-bold text-base sm:text-lg shadow-lg">
+                        <div class="flex items-center gap-2">
+                            <span class="text-amber-400 text-xl"><i class="fa-solid fa-trophy"></i></span>
+                            <span>점수: <span id="score-text" class="text-amber-300 text-2xl font-extrabold">0</span></span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-rose-400 text-xl"><i class="fa-solid fa-hourglass-half"></i></span>
+                            <span>시간: <span id="timer-text" class="text-rose-300 text-2xl font-extrabold">40</span>s</span>
+                        </div>
+                    </div>
+
+                    <!-- Current Mission Banner -->
+                    <div id="mission-banner" class="banner-glow bg-gradient-to-r from-amber-500 via-rose-500 to-indigo-500 p-0.5 rounded-2xl shadow-xl transform transition-all duration-300">
+                        <div class="bg-slate-900/90 rounded-xl px-3 py-1.5 text-center flex flex-col items-center justify-center">
+                            <div class="text-xs text-amber-300 font-bold uppercase tracking-wider flex items-center gap-1">
+                                <i class="fa-solid fa-palette"></i> 현재 수집 목표
+                            </div>
+                            <div id="mission-title" class="text-lg sm:text-xl font-black text-white text-stroke tracking-wide my-0.5">
+                                [난색]을 수집하세요!
+                            </div>
+                            <div id="mission-desc" class="text-xs text-slate-300 font-normal">
+                                따뜻한 느낌의 색상 (빨강, 주황, 노랑 등)
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Combo Indicator -->
+                    <div id="combo-box" class="self-center bg-amber-400 text-slate-950 px-3 py-0.5 rounded-full font-black text-xs shadow-lg opacity-0 transition-opacity duration-200 transform scale-90">
+                        🔥 <span id="combo-text">2 COMBO!</span> (점수 x2)
+                    </div>
+                </div>
+
+                <!-- Main Game Canvas -->
+                <canvas id="gameCanvas" class="w-full h-full block cursor-pointer"></canvas>
+
+                <!-- Touch Controls Bar (Mobile) -->
+                <div class="absolute bottom-3 left-0 right-0 z-10 flex justify-between px-6 pointer-events-auto sm:hidden">
+                    <button id="btn-left" class="w-14 h-14 rounded-full bg-white/20 active:bg-white/50 backdrop-blur-md border-2 border-white/60 text-white text-xl flex items-center justify-center shadow-lg active:scale-95 transition-all">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <button id="btn-right" class="w-14 h-14 rounded-full bg-white/20 active:bg-white/50 backdrop-blur-md border-2 border-white/60 text-white text-xl flex items-center justify-center shadow-lg active:scale-95 transition-all">
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+                <!-- Start Screen -->
+                <div id="start-screen" class="absolute inset-0 z-20 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-between p-6 text-center text-white">
+                    <div class="mt-4">
+                        <div class="text-4xl mb-2">🎨</div>
+                        <h2 class="text-2xl sm:text-3xl font-black text-amber-300">모드 1: 컬러 헌터</h2>
+                        <p class="text-slate-300 text-xs sm:text-sm mt-2 max-w-xs mx-auto">
+                            목표 색상 방울을 모으고 점수를 깎는 <b>방해 별⭐</b>을 피해 제한시간 동안 최고 점수를 기록하세요!
+                        </p>
+                    </div>
+
+                    <div class="w-full bg-slate-900/90 border border-slate-700 rounded-2xl p-3 text-left text-xs text-slate-300 space-y-1 my-2">
+                        <div class="font-bold text-amber-300 border-b border-slate-700 pb-1 mb-1">🎮 조작 안내</div>
+                        <div>• <b>키보드:</b> 좌/우 방향키(◀ ▶) 또는 A / D 키</div>
+                        <div>• <b>마우스/터치:</b> 화면을 누르고 원하는 방향으로 드래그</div>
+                    </div>
+
+                    <div class="w-full mb-2">
+                        <button id="start-btn" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 active:scale-95 transition-all font-black text-lg text-slate-900 shadow-xl border-2 border-emerald-200">
+                            <i class="fa-solid fa-play mr-2"></i> 게임 시작!
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Result Screen -->
+                <div id="result-screen" class="absolute inset-0 z-20 bg-slate-950/95 backdrop-blur-lg flex flex-col items-center justify-center p-6 text-center text-white hidden">
+                    <div class="text-amber-400 text-4xl mb-2"><i class="fa-solid fa-award"></i></div>
+                    <h2 class="text-2xl font-black text-white mb-1">탐험 완료!</h2>
+                    <p id="grade-badge" class="text-sm font-bold text-emerald-400 mb-4 bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-500/40">
+                        S등급: 색채의 마술사!
+                    </p>
+
+                    <div class="w-full max-w-xs bg-slate-900/90 rounded-2xl p-3 border border-slate-700 shadow-inner mb-4 space-y-1.5 text-xs">
+                        <div class="flex justify-between text-slate-400">
+                            <span>최종 점수</span>
+                            <span id="final-score" class="font-bold text-amber-300 text-base">0점</span>
+                        </div>
+                        <div class="flex justify-between text-slate-400">
+                            <span>최대 콤보</span>
+                            <span id="max-combo" class="font-bold text-rose-400 text-base">0 COMBO</span>
+                        </div>
+                        <div class="flex justify-between text-slate-400">
+                            <span>수집 성공률</span>
+                            <span id="accuracy-text" class="font-bold text-cyan-300 text-base">100%</span>
+                        </div>
+                    </div>
+
+                    <button id="restart-btn" class="w-full max-w-xs py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-rose-500 hover:from-amber-500 hover:to-rose-600 active:scale-95 transition-all font-black text-base text-slate-900 shadow-lg">
+                        <i class="fa-solid fa-rotate-right mr-2"></i> 다시 도전하기
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== MODE 2: COLOR LAB & QUIZ ==================== -->
+        <section id="mode-quiz" class="w-full flex flex-col items-center hidden">
+            <div class="w-full max-w-xl glass-panel rounded-3xl p-5 sm:p-6 border border-slate-700 art-shadow">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4">
+                    <div>
+                        <span class="text-xs text-cyan-400 font-bold uppercase">Color Lab Quiz</span>
+                        <h2 class="text-xl sm:text-2xl font-black text-white">🧪 색채 연구소 & 퀴즈</h2>
+                    </div>
+                    <div class="bg-cyan-950 border border-cyan-500/40 px-3 py-1 rounded-full text-xs text-cyan-300 font-bold">
+                        점수: <span id="quiz-score" class="text-amber-300 text-sm">0</span>점
+                    </div>
+                </div>
+
+                <!-- Quiz Container -->
+                <div id="quiz-box" class="space-y-4">
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <span>문제 <span id="quiz-step" class="text-white font-bold">1</span> / 5</span>
+                        <span id="quiz-timer" class="text-rose-400 font-bold">⏱️ 15s</span>
+                    </div>
+
+                    <div id="quiz-question" class="text-base sm:text-lg font-extrabold text-amber-200 bg-slate-900/80 p-4 rounded-2xl border border-slate-800 text-center">
+                        질문이 로딩 중입니다...
+                    </div>
+
+                    <!-- Color Mix Preview Tank (Interactive) -->
+                    <div id="color-tank-box" class="flex items-center justify-center gap-3 py-2">
+                        <div id="tank-c1" class="w-12 h-12 rounded-full border-2 border-white/40 shadow-inner bg-red-500 transition-all flex items-center justify-center text-xs font-bold">색상 1</div>
+                        <span class="text-xl font-bold text-slate-400">+</span>
+                        <div id="tank-c2" class="w-12 h-12 rounded-full border-2 border-white/40 shadow-inner bg-yellow-400 transition-all flex items-center justify-center text-xs font-bold">색상 2</div>
+                        <span class="text-xl font-bold text-slate-400">=</span>
+                        <div id="tank-result" class="w-14 h-14 rounded-full border-2 border-amber-300 shadow-lg bg-orange-500 transition-all flex items-center justify-center text-xs font-black text-slate-900">혼합색</div>
+                    </div>
+
+                    <!-- Options Buttons Grid -->
+                    <div id="quiz-options" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+                        <!-- Dynamic Buttons -->
+                    </div>
+
+                    <!-- Feedback message -->
+                    <div id="quiz-feedback" class="text-center font-bold text-sm min-h-[24px]"></div>
+                </div>
+
+                <div id="quiz-result-box" class="hidden text-center py-6 space-y-4">
+                    <div class="text-5xl">🧪</div>
+                    <h3 class="text-2xl font-black text-amber-300">연구소 실험 완료!</h3>
+                    <p id="quiz-final-text" class="text-slate-300 text-sm">최종 점수: 50점</p>
+                    <button onclick="initQuizMode()" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 font-black text-slate-900 hover:scale-105 transition-all shadow-lg">
+                        <i class="fa-solid fa-rotate-right"></i> 다시 도전하기
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== MODE 3: GRADIENT SPECTRUM SORT ==================== -->
+        <section id="mode-sort" class="w-full flex flex-col items-center hidden">
+            <div class="w-full max-w-xl glass-panel rounded-3xl p-5 sm:p-6 border border-slate-700 art-shadow">
+                <div class="flex justify-between items-center border-b border-slate-700 pb-3 mb-4">
+                    <div>
+                        <span class="text-xs text-emerald-400 font-bold uppercase">Spectrum Puzzle</span>
+                        <h2 class="text-xl sm:text-2xl font-black text-white">🌈 명도·채도 스펙트럼 정렬</h2>
+                    </div>
+                    <div class="bg-emerald-950 border border-emerald-500/40 px-3 py-1 rounded-full text-xs text-emerald-300 font-bold">
+                        스테이지: <span id="sort-stage" class="text-amber-300 text-sm">1</span> / 4
+                    </div>
+                </div>
+
+                <p id="sort-instruction" class="text-xs sm:text-sm text-slate-300 mb-4 bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-center">
+                    타일을 터치하거나 클릭하여 순서를 바꿔 <b>[밝은 명도 ➡️ 어두운 명도]</b> 순서대로 정렬하세요!
+                </p>
+
+                <!-- Color Tiles Container -->
+                <div id="sort-tiles-container" class="flex justify-center items-center gap-2 py-4 px-2 bg-slate-950/60 rounded-2xl border border-slate-800 min-h-[110px]">
+                    <!-- Dynamic Tiles -->
+                </div>
+
+                <div class="flex justify-between items-center mt-4">
+                    <span id="sort-status" class="text-xs text-amber-300 font-bold">💡 두 타일을 선택하여 교환하세요.</span>
+                    <button id="sort-check-btn" onclick="checkSortOrder()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 font-black text-slate-900 text-sm hover:scale-105 active:scale-95 transition-all shadow-md">
+                        <i class="fa-solid fa-check"></i> 정렬 확인
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== EDUCATIONAL GUIDE SECTION (SCROLLABLE) ==================== -->
+        <section id="guide-section" class="w-full max-w-4xl mt-10 space-y-6">
+            <div class="text-center border-b border-slate-800 pb-4">
+                <span class="text-xs text-amber-400 font-bold uppercase tracking-widest">Educational Resource</span>
+                <h2 class="text-2xl sm:text-3xl font-black text-white flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-book-open text-amber-400"></i> 중1 미술 교과서 색채 핵심 가이드
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-400 mt-1">색의 3속성(색상, 명도, 채도)과 한난색, 보색 관계를 정리해보세요!</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Guide Card 1: 색의 3속성 -->
+                <div class="glass-card rounded-2xl p-4 border border-slate-700/80 hover:border-pink-500/50 transition-all">
+                    <div class="flex items-center gap-2 text-pink-400 font-extrabold text-lg mb-2">
+                        <i class="fa-solid fa-sliders"></i> 1. 색의 3속성 (Three Attributes)
+                    </div>
+                    <ul class="text-xs sm:text-sm text-slate-300 space-y-2 leading-relaxed">
+                        <li><b class="text-amber-300">• 색상 (Hue):</b> 빨강, 노랑, 파랑 등 색이 갖는 고유한 이름과 위치.</li>
+                        <li><b class="text-amber-300">• 명도 (Value):</b> 색의 밝고 어두운 정도. 흰색에 가까울수록 <span class="text-yellow-200 font-bold">고명도</span>, 검정에 가까울수록 <span class="text-indigo-400 font-bold">저명도</span>.</li>
+                        <li><b class="text-amber-300">• 채도 (Saturation):</b> 색의 선명하고 맑은 정도. 다른 색이 섞이지 않은 순색은 <span class="text-rose-400 font-bold">고채도</span>, 회색이 섞인 탁색은 <span class="text-stone-400 font-bold">저채도</span>.</li>
+                    </ul>
+                </div>
+
+                <!-- Guide Card 2: 한색과 난색 -->
+                <div class="glass-card rounded-2xl p-4 border border-slate-700/80 hover:border-amber-500/50 transition-all">
+                    <div class="flex items-center gap-2 text-amber-400 font-extrabold text-lg mb-2">
+                        <i class="fa-solid fa-temperature-three-quarters"></i> 2. 한색과 난색 (Color Temperature)
+                    </div>
+                    <div class="space-y-2 text-xs sm:text-sm text-slate-300">
+                        <div class="p-2 rounded-xl bg-gradient-to-r from-red-950/80 to-amber-950/80 border border-red-500/30">
+                            <span class="font-bold text-red-400">🔥 난색 (따뜻한 색):</span> 빨강, 주황, 노랑<br>
+                            <span class="text-xs text-slate-400">따뜻함, 활기, 전진감, 친근한 느낌을 줍니다.</span>
+                        </div>
+                        <div class="p-2 rounded-xl bg-gradient-to-r from-cyan-950/80 to-blue-950/80 border border-cyan-500/30">
+                            <span class="font-bold text-cyan-400">❄️ 한색 (차가운 색):</span> 파랑, 청록, 남색<br>
+                            <span class="text-xs text-slate-400">시원함, 차분함, 후퇴감, 정적인 느낌을 줍니다.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guide Card 3: 보색 관계 -->
+                <div class="glass-card rounded-2xl p-4 border border-slate-700/80 hover:border-indigo-500/50 transition-all">
+                    <div class="flex items-center gap-2 text-indigo-400 font-extrabold text-lg mb-2">
+                        <i class="fa-solid fa-circle-dot"></i> 3. 보색 관계 (Complementary Colors)
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed mb-2">
+                        색상환에서 서로 <b>마주보고 있는 반대되는 색</b>입니다. 함께 배치하면 대비가 강해져 서로를 더욱 선명해 보이게 만듭니다.
+                    </p>
+                    <div class="grid grid-cols-3 gap-1.5 text-center text-xs font-bold">
+                        <div class="bg-slate-900 p-1.5 rounded-lg border border-slate-800">
+                            <span class="text-red-400">빨강</span> ↔️ <span class="text-emerald-400">청록</span>
+                        </div>
+                        <div class="bg-slate-900 p-1.5 rounded-lg border border-slate-800">
+                            <span class="text-amber-400">노랑</span> ↔️ <span class="text-purple-400">보라</span>
+                        </div>
+                        <div class="bg-slate-900 p-1.5 rounded-lg border border-slate-800">
+                            <span class="text-orange-400">주황</span> ↔️ <span class="text-blue-400">파랑</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guide Card 4: Interactive Color Wheel Canvas -->
+                <div class="glass-card rounded-2xl p-4 border border-slate-700/80 hover:border-emerald-500/50 transition-all flex flex-col items-center">
+                    <div class="flex items-center gap-2 text-emerald-400 font-extrabold text-lg mb-2 w-full text-left">
+                        <i class="fa-solid fa-compass"></i> 4. 20색상환 시각화
+                    </div>
+                    <canvas id="colorWheelCanvas" width="180" height="180" class="my-1"></canvas>
+                    <span class="text-xs text-slate-400">마주 보는 색이 서로의 보색입니다.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="w-full text-center py-8 text-xs text-slate-500">
+            🎨 중학교 1학년 미술 교과 과정 연계 웹 기반 멀티모드 색채 학습 게임
+        </footer>
+    </main>
+
+    <script>
+        /* Web Audio Synthesizer for Retro Sound Effects */
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playCatch() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, this.ctx.currentTime); // C5
+                osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.15); // A5
+                gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
+            playStar() {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(110, this.ctx.currentTime + 0.22);
+                gain.gain.setValueAtTime(0.25, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.22);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.22);
+            }
+            playSuccess() {
+                if (!this.ctx) return;
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime + i * 0.08);
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime + i * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + i * 0.08 + 0.2);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(this.ctx.currentTime + i * 0.08);
+                    osc.stop(this.ctx.currentTime + i * 0.08 + 0.2);
+                });
+            }
+        }
+        const sfx = new SoundFX();
+
+        // Navigation Tab Switching
+        const tabHunter = document.getElementById('tab-hunter');
+        const tabQuiz = document.getElementById('tab-quiz');
+        const tabSort = document.getElementById('tab-sort');
+
+        const modeHunter = document.getElementById('mode-hunter');
+        const modeQuiz = document.getElementById('mode-quiz');
+        const modeSort = document.getElementById('mode-sort');
+
+        function switchMode(target) {
+            [tabHunter, tabQuiz, tabSort].forEach(b => {
+                b.classList.remove('active');
+                b.classList.add('text-slate-300');
+            });
+            [modeHunter, modeQuiz, modeSort].forEach(m => m.classList.add('hidden'));
+
+            if (target === 'hunter') {
+                tabHunter.classList.add('active');
+                tabHunter.classList.remove('text-slate-300');
+                modeHunter.classList.remove('hidden');
+            } else if (target === 'quiz') {
+                tabQuiz.classList.add('active');
+                tabQuiz.classList.remove('text-slate-300');
+                modeQuiz.classList.remove('hidden');
+                initQuizMode();
+            } else if (target === 'sort') {
+                tabSort.classList.add('active');
+                tabSort.classList.remove('text-slate-300');
+                modeSort.classList.remove('hidden');
+                initSortMode();
+            }
+        }
+
+        tabHunter.addEventListener('click', () => switchMode('hunter'));
+        tabQuiz.addEventListener('click', () => switchMode('quiz'));
+        tabSort.addEventListener('click', () => switchMode('sort'));
+
+        // Educational Color Definitions for Arcade Hunter Mode
+        const MISSIONS = [
+            { id: 'warm', name: '난색 (따뜻한 색)', desc: '빨강, 주황, 노랑 등 온화하고 따뜻한 느낌의 색상', bg: 'from-amber-500 to-rose-600' },
+            { id: 'cool', name: '한색 (차가운 색)', desc: '파랑, 남색, 청록 등 시원하고 정적인 느낌의 색상', bg: 'from-cyan-500 to-blue-700' },
+            { id: 'high_val', name: '고명도 (밝은 색)', desc: '흰색이 많이 섞여 밝기가 높은 명사 및 연한 색상', bg: 'from-yellow-300 to-emerald-400' },
+            { id: 'low_val', name: '저명도 (어두운 색)', desc: '검정이 섞여 밝기가 낮은 어두운 무게감의 색상', bg: 'from-slate-700 to-indigo-950' },
+            { id: 'high_sat', name: '고채도 (선명한 순색)', desc: '다른 색이 섞이지 않고 맑고 선명하며 또렷한 원색', bg: 'from-fuchsia-500 to-pink-600' },
+            { id: 'low_sat', name: '저채도 (탁한 색)', desc: '회색이나 보색이 섞여 칙칙하고 차분해진 탁색', bg: 'from-stone-500 to-zinc-700' }
+        ];
+
+        const COLOR_ITEMS = [
+            { label: '빨강', color: '#ff2d55', hue: 'warm', val: 'mid', sat: 'high' },
+            { label: '주황', color: '#ff9500', hue: 'warm', val: 'high', sat: 'high' },
+            { label: '노랑', color: '#ffcc00', hue: 'warm', val: 'high', sat: 'high' },
+            { label: '파랑', color: '#007aff', hue: 'cool', val: 'mid', sat: 'high' },
+            { label: '남색', color: '#1d2731', hue: 'cool', val: 'low', sat: 'mid' },
+            { label: '청록', color: '#00c7be', hue: 'cool', val: 'high', sat: 'high' },
+            { label: '흰색', color: '#ffffff', hue: 'neutral', val: 'high', sat: 'low' },
+            { label: '연노랑', color: '#fffae6', hue: 'warm', val: 'high', sat: 'mid' },
+            { label: '검정', color: '#1c1c1e', hue: 'neutral', val: 'low', sat: 'low' },
+            { label: '딥블루', color: '#0a192f', hue: 'cool', val: 'low', sat: 'high' },
+            { label: '회색', color: '#8e8e93', hue: 'neutral', val: 'mid', sat: 'low' },
+            { label: '탁한카키', color: '#5c6352', hue: 'warm', val: 'low', sat: 'low' }
+        ];
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('game-canvas-container');
+
+        let width = 400;
+        let height = 580;
+
+        function resizeCanvas() {
+            const rect = container.getBoundingClientRect();
+            width = rect.width;
+            height = rect.height;
+            canvas.width = width * window.devicePixelRatio;
+            canvas.height = height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        let isPlaying = false;
+        let score = 0;
+        let timeLeft = 40;
+        let combo = 0;
+        let maxCombo = 0;
+        let correctCatches = 0;
+        let totalCatches = 0;
+        let lastTime = 0;
+        let timerInterval = null;
+        let missionInterval = null;
+        let currentMission = MISSIONS[0];
+
+        const player = { x: 200, y: 0, width: 65, speed: 420, angle: 0 };
+        let items = [];
+        let particles = [];
+        let popups = [];
+        let keys = { left: false, right: false };
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
+        });
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a') keys.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd') keys.right = false;
+        });
+
+        // Touch buttons
+        const btnLeft = document.getElementById('btn-left');
+        const btnRight = document.getElementById('btn-right');
+        const bindTouch = (el, keyName) => {
+            el.addEventListener('touchstart', (e) => { e.preventDefault(); keys[keyName] = true; });
+            el.addEventListener('touchend', (e) => { e.preventDefault(); keys[keyName] = false; });
+            el.addEventListener('mousedown', () => { keys[keyName] = true; });
+            el.addEventListener('mouseup', () => { keys[keyName] = false; });
+        };
+        bindTouch(btnLeft, 'left');
+        bindTouch(btnRight, 'right');
+
+        // Drag on Canvas
+        let isPointerDown = false;
+        canvas.addEventListener('pointerdown', (e) => { isPointerDown = true; movePlayerToPointer(e); });
+        canvas.addEventListener('pointermove', (e) => { if (isPointerDown) movePlayerToPointer(e); });
+        window.addEventListener('pointerup', () => { isPointerDown = false; });
+
+        function movePlayerToPointer(e) {
+            const rect = canvas.getBoundingClientRect();
+            player.x = e.clientX - rect.left;
+        }
+
+        function changeMission() {
+            currentMission = MISSIONS[Math.floor(Math.random() * MISSIONS.length)];
+            document.getElementById('mission-title').textContent = `[${currentMission.name.split(' ')[0]}]를 모으세요!`;
+            document.getElementById('mission-desc').textContent = currentMission.desc;
+            document.getElementById('mission-banner').className = `banner-glow bg-gradient-to-r ${currentMission.bg} p-0.5 rounded-2xl shadow-xl`;
+        }
+
+        function spawnItem() {
+            if (!isPlaying) return;
+            const isStar = Math.random() < 0.22;
+            const radius = 20;
+            const x = Math.random() * (width - radius * 2) + radius;
+
+            if (isStar) {
+                items.push({ x, y: -radius * 2, radius, speed: 180 + Math.random() * 120, isStar: true, rotation: 0 });
+            } else {
+                const colorData = COLOR_ITEMS[Math.floor(Math.random() * COLOR_ITEMS.length)];
+                items.push({ x, y: -radius * 2, radius, speed: 150 + Math.random() * 120, isStar: false, pulse: Math.random() * Math.PI, ...colorData });
+            }
+        }
+
+        function createParticles(x, y, color, count = 10) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 120 + 40;
+                particles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, radius: Math.random() * 4 + 2, color, alpha: 1, life: 0.35 });
+            }
+        }
+
+        function createFloatingText(x, y, text, color) {
+            popups.push({ x, y, text, color, alpha: 1, vy: -50 });
+        }
+
+        function checkMissionMatch(item) {
+            if (item.isStar) return false;
+            switch (currentMission.id) {
+                case 'warm': return item.hue === 'warm';
+                case 'cool': return item.hue === 'cool';
+                case 'high_val': return item.val === 'high';
+                case 'low_val': return item.val === 'low';
+                case 'high_sat': return item.sat === 'high';
+                case 'low_sat': return item.sat === 'low';
+                default: return false;
+            }
+        }
+
+        function drawPlayer(dt) {
+            player.y = height - 60;
+            if (keys.left) { player.x -= player.speed * dt; player.angle = -0.18; }
+            else if (keys.right) { player.x += player.speed * dt; player.angle = 0.18; }
+            else { player.angle *= 0.8; }
+
+            if (player.x < player.width / 2) player.x = player.width / 2;
+            if (player.x > width - player.width / 2) player.x = width - player.width / 2;
+
+            ctx.save();
+            ctx.translate(player.x, player.y);
+            ctx.rotate(player.angle);
+
+            // Paint Bucket
+            ctx.fillStyle = '#334155';
+            ctx.beginPath();
+            ctx.roundRect(-22, -12, 44, 36, [4, 4, 10, 10]);
+            ctx.fill();
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+
+            // Label
+            ctx.fillStyle = '#ec4899';
+            ctx.fillRect(-18, -4, 36, 16);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 9px Jua';
+            ctx.textAlign = 'center';
+            ctx.fillText('컬러 수집', 0, 7);
+
+            ctx.restore();
+        }
+
+        function drawStarShape(cx, cy, spikes, outerRadius, innerRadius) {
+            let rot = Math.PI / 2 * 3;
+            let step = Math.PI / spikes;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < spikes; i++) {
+                ctx.lineTo(cx + Math.cos(rot) * outerRadius, cy + Math.sin(rot) * outerRadius);
+                rot += step;
+                ctx.lineTo(cx + Math.cos(rot) * innerRadius, cy + Math.sin(rot) * innerRadius);
+                rot += step;
+            }
+            ctx.closePath();
+            ctx.fillStyle = '#facc15';
+            ctx.fill();
+            ctx.strokeStyle = '#ca8a04';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+        function drawItems(dt) {
+            for (let i = items.length - 1; i >= 0; i--) {
+                let item = items[i];
+                item.y += item.speed * dt;
+
+                ctx.save();
+                ctx.translate(item.x, item.y);
+
+                if (item.isStar) {
+                    item.rotation += dt * 3;
+                    ctx.rotate(item.rotation);
+                    drawStarShape(0, 0, 5, item.radius, item.radius * 0.5);
+                } else {
+                    item.pulse += dt * 4;
+                    const scale = 1 + Math.sin(item.pulse) * 0.05;
+                    ctx.scale(scale, scale);
+
+                    ctx.fillStyle = item.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, item.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 10px Jua';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(item.label, 0, item.radius + 12);
+                }
+
+                ctx.restore();
+
+                // Collision
+                const dx = item.x - player.x;
+                const dy = item.y - player.y;
+                if (Math.sqrt(dx * dx + dy * dy) < item.radius + player.width / 2.2) {
+                    totalCatches++;
+                    if (item.isStar) {
+                        score = Math.max(0, score - 8);
+                        combo = 0;
+                        sfx.playStar();
+                        createParticles(item.x, item.y, '#facc15', 12);
+                        createFloatingText(item.x, item.y - 10, '-8점! ⭐', '#ef4444');
+                    } else {
+                        if (checkMissionMatch(item)) {
+                            correctCatches++;
+                            combo++;
+                            if (combo > maxCombo) maxCombo = combo;
+                            const points = combo >= 3 ? 20 : 10;
+                            score += points;
+                            sfx.playCatch();
+                            createParticles(item.x, item.y, item.color, 15);
+                            createFloatingText(item.x, item.y - 10, `+${points}점!`, '#34d399');
+                        } else {
+                            score = Math.max(0, score - 3);
+                            combo = 0;
+                            sfx.playStar();
+                            createParticles(item.x, item.y, '#64748b', 8);
+                            createFloatingText(item.x, item.y - 10, '-3점', '#f97316');
+                        }
+                    }
+                    document.getElementById('score-text').textContent = score;
+                    items.splice(i, 1);
+                    continue;
+                }
+
+                if (item.y > height + 40) items.splice(i, 1);
+            }
+        }
+
+        function drawParticles(dt) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.alpha -= dt / p.life;
+
+                if (p.alpha <= 0) { particles.splice(i, 1); continue; }
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.alpha);
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function drawPopups(dt) {
+            for (let i = popups.length - 1; i >= 0; i--) {
+                let pop = popups[i];
+                pop.y += pop.vy * dt;
+                pop.alpha -= dt * 1.2;
+
+                if (pop.alpha <= 0) { popups.splice(i, 1); continue; }
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, pop.alpha);
+                ctx.font = 'bold 16px Jua';
+                ctx.fillStyle = pop.color;
+                ctx.textAlign = 'center';
+                ctx.fillText(pop.text, pop.x, pop.y);
+                ctx.restore();
+            }
+        }
+
+        function gameLoop(timestamp) {
+            if (!isPlaying) return;
+            if (!lastTime) lastTime = timestamp;
+            const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+            lastTime = timestamp;
+
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, width, height);
+
+            drawPlayer(dt);
+            drawItems(dt);
+            drawParticles(dt);
+            drawPopups(dt);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            sfx.init();
+            score = 0; timeLeft = 40; combo = 0; maxCombo = 0; correctCatches = 0; totalCatches = 0;
+            items = []; particles = []; popups = []; isPlaying = true; lastTime = 0;
+
+            document.getElementById('score-text').textContent = score;
+            document.getElementById('timer-text').textContent = timeLeft;
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.add('hidden');
+
+            changeMission();
+            clearInterval(missionInterval);
+            missionInterval = setInterval(changeMission, 8000);
+
+            function scheduleSpawn() {
+                if (!isPlaying) return;
+                spawnItem();
+                setTimeout(scheduleSpawn, 500);
+            }
+            scheduleSpawn();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-text').textContent = timeLeft;
+                if (timeLeft <= 0) endGame();
+            }, 1000);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endGame() {
+            isPlaying = false;
+            clearInterval(timerInterval);
+            clearInterval(missionInterval);
+
+            const accuracy = totalCatches > 0 ? Math.round((correctCatches / totalCatches) * 100) : 100;
+            document.getElementById('final-score').textContent = `${score}점`;
+            document.getElementById('max-combo').textContent = `${maxCombo} COMBO`;
+            document.getElementById('accuracy-text').textContent = `${accuracy}%`;
+
+            const gradeBadge = document.getElementById('grade-badge');
+            if (score >= 180) { gradeBadge.textContent = '🌟 S등급: 색채의 마술사!'; }
+            else if (score >= 110) { gradeBadge.textContent = '🎨 A등급: 색상 감각 우수!'; }
+            else { gradeBadge.textContent = '🖌️ B등급: 미술 탐험가'; }
+
+            document.getElementById('result-screen').classList.remove('hidden');
+        }
+
+        document.getElementById('start-btn').addEventListener('click', startGame);
+        document.getElementById('restart-btn').addEventListener('click', startGame);
+
+        // ==================== MODE 2: QUIZ & COLOR LAB LOGIC ====================
+        const QUIZ_DATA = [
+            {
+                question: "빨간색과 노란색 물감을 1:1로 섞으면 무슨 색이 될까요?",
+                c1: "#ff0000", c2: "#ffff00", res: "#ff7f00",
+                options: ["주황색", "초록색", "보라색", "남색"], answer: 0
+            },
+            {
+                question: "다음 중 차가운 느낌을 주는 '한색(Cool Color)'은 무엇일까요?",
+                c1: "#007aff", c2: "#00c7be", res: "#0055ff",
+                options: ["주황색", "다홍색", "파랑색", "노란색"], answer: 2
+            },
+            {
+                question: "색상환에서 노란색(Yellow)과 서로 마주보는 '보색' 관계인 색은?",
+                c1: "#ffff00", c2: "#8b5cf6", res: "#a855f7",
+                options: ["초록색", "보라색", "빨간색", "검은색"], answer: 1
+            },
+            {
+                question: "흰색이 많이 섞여 밝기가 높은 명도 상태를 무엇이라 하나요?",
+                c1: "#ffffff", c2: "#fef08a", res: "#fef9c3",
+                options: ["저명도", "고채도", "고명도", "저채도"], answer: 2
+            },
+            {
+                question: "다른 색이 전혀 섞이지 않은 맑고 선명한 순색의 특징은?",
+                c1: "#ec4899", c2: "#f43f5e", res: "#e11d48",
+                options: ["채도가 높다(고채도)", "명도가 아주 낮다", "회색빛이 돈다", "무채색이다"], answer: 0
+            }
+        ];
+
+        let quizIndex = 0;
+        let quizScore = 0;
+        let quizTimer = null;
+        let quizTimeLeft = 15;
+
+        function initQuizMode() {
+            sfx.init();
+            quizIndex = 0;
+            quizScore = 0;
+            document.getElementById('quiz-score').textContent = quizScore;
+            document.getElementById('quiz-box').classList.remove('hidden');
+            document.getElementById('quiz-result-box').classList.add('hidden');
+            loadQuizStep();
+        }
+
+        function loadQuizStep() {
+            if (quizIndex >= QUIZ_DATA.length) {
+                finishQuiz();
+                return;
+            }
+
+            const current = QUIZ_DATA[quizIndex];
+            document.getElementById('quiz-step').textContent = quizIndex + 1;
+            document.getElementById('quiz-question').textContent = current.question;
+            document.getElementById('quiz-feedback').textContent = '';
+
+            // Update Tank Visuals
+            document.getElementById('tank-c1').style.backgroundColor = current.c1;
+            document.getElementById('tank-c2').style.backgroundColor = current.c2;
+            document.getElementById('tank-result').style.backgroundColor = current.res;
+
+            // Render Option Buttons
+            const optionsBox = document.getElementById('quiz-options');
+            optionsBox.innerHTML = '';
+            current.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 font-bold text-sm text-slate-200 text-left transition-all flex items-center justify-between';
+                btn.innerHTML = `<span>${idx + 1}. ${opt}</span> <i class="fa-solid fa-circle-chevron-right text-slate-500"></i>`;
+                btn.onclick = () => submitQuizAnswer(idx);
+                optionsBox.appendChild(btn);
+            });
+
+            // Start Timer
+            quizTimeLeft = 15;
+            document.getElementById('quiz-timer').textContent = `⏱️ ${quizTimeLeft}s`;
+            clearInterval(quizTimer);
+            quizTimer = setInterval(() => {
+                quizTimeLeft--;
+                document.getElementById('quiz-timer').textContent = `⏱️ ${quizTimeLeft}s`;
+                if (quizTimeLeft <= 0) {
+                    clearInterval(quizTimer);
+                    submitQuizAnswer(-1); // Timeout
+                }
+            }, 1000);
+        }
+
+        function submitQuizAnswer(selected) {
+            clearInterval(quizTimer);
+            const current = QUIZ_DATA[quizIndex];
+            const feedback = document.getElementById('quiz-feedback');
+
+            if (selected === current.answer) {
+                quizScore += 20;
+                sfx.playSuccess();
+                feedback.className = 'text-center font-bold text-sm text-emerald-400 min-h-[24px]';
+                feedback.textContent = '🎉 정답입니다! (+20점)';
+            } else {
+                sfx.playStar();
+                feedback.className = 'text-center font-bold text-sm text-rose-400 min-h-[24px]';
+                feedback.textContent = `❌ 오답입니다! (정답: ${current.answer + 1}. ${current.options[current.answer]})`;
+            }
+
+            document.getElementById('quiz-score').textContent = quizScore;
+            setTimeout(() => {
+                quizIndex++;
+                loadQuizStep();
+            }, 1500);
+        }
+
+        function finishQuiz() {
+            document.getElementById('quiz-box').classList.add('hidden');
+            document.getElementById('quiz-result-box').classList.remove('hidden');
+            document.getElementById('quiz-final-text').textContent = `퀴즈 점수: ${quizScore}점 / 100점`;
+        }
+
+        // ==================== MODE 3: GRADIENT SPECTRUM SORT LOGIC ====================
+        const SORT_STAGES = [
+            {
+                title: "명도 정렬: [밝은 색 ➡️ 어두운 색]",
+                instruction: "흰색이 많이 섞인 고명도에서 검정이 섞인 저명도 순서로 타일을 정렬하세요.",
+                correct: ['#ffffff', '#fef08a', '#e2e8f0', '#64748b', '#0f172a']
+            },
+            {
+                title: "난색 스펙트럼 정렬",
+                instruction: "노랑 ➡️ 주황 ➡️ 빨강 ➡️ 다홍 순서대로 따뜻한 난색 스펙트럼을 완성하세요.",
+                correct: ['#facc15', '#f97316', '#ef4444', '#b91c1c']
+            },
+            {
+                title: "한색 스펙트럼 정렬",
+                instruction: "연청록 ➡️ 파랑 ➡️ 남색 ➡️ 딥블루 순서대로 차가운 한색 스펙트럼을 완성하세요.",
+                correct: ['#2dd4bf', '#3b82f6', '#1d4ed8', '#0f172a']
+            }
+        ];
+
+        let currentSortStage = 0;
+        let currentTiles = [];
+        let selectedTileIndex = null;
+
+        function initSortMode() {
+            sfx.init();
+            currentSortStage = 0;
+            loadSortStage();
+        }
+
+        function loadSortStage() {
+            const stage = SORT_STAGES[currentSortStage];
+            document.getElementById('sort-stage').textContent = currentSortStage + 1;
+            document.getElementById('sort-instruction').innerHTML = `<b>${stage.title}:</b> ${stage.instruction}`;
+            document.getElementById('sort-status').textContent = '💡 두 타일을 연속으로 선택하여 위치를 교환하세요.';
+
+            // Shuffle Tiles
+            currentTiles = [...stage.correct].sort(() => Math.random() - 0.5);
+            selectedTileIndex = null;
+            renderTiles();
+        }
+
+        function renderTiles() {
+            const container = document.getElementById('sort-tiles-container');
+            container.innerHTML = '';
+            currentTiles.forEach((color, idx) => {
+                const tile = document.createElement('div');
+                const isSelected = selectedTileIndex === idx;
+                tile.className = `w-12 h-16 sm:w-16 sm:h-20 rounded-xl cursor-pointer transition-all flex flex-col justify-between p-1.5 border-2 ${isSelected ? 'border-amber-300 scale-110 shadow-lg ring-4 ring-amber-300/40' : 'border-white/30 hover:scale-105'}`;
+                tile.style.backgroundColor = color;
+                tile.innerHTML = `<span class="text-[10px] font-bold text-slate-900 bg-white/70 rounded px-1 self-start">${idx + 1}</span>`;
+                tile.onclick = () => onTileClick(idx);
+                container.appendChild(tile);
+            });
+        }
+
+        function onTileClick(idx) {
+            if (selectedTileIndex === null) {
+                selectedTileIndex = idx;
+            } else if (selectedTileIndex === idx) {
+                selectedTileIndex = null;
+            } else {
+                // Swap
+                const temp = currentTiles[selectedTileIndex];
+                currentTiles[selectedTileIndex] = currentTiles[idx];
+                currentTiles[idx] = temp;
+                selectedTileIndex = null;
+            }
+            renderTiles();
+        }
+
+        function checkSortOrder() {
+            const stage = SORT_STAGES[currentSortStage];
+            const isCorrect = currentTiles.every((val, idx) => val === stage.correct[idx]);
+            const statusEl = document.getElementById('sort-status');
+
+            if (isCorrect) {
+                sfx.playSuccess();
+                statusEl.className = 'text-xs text-emerald-400 font-bold';
+                statusEl.textContent = '🎉 정답입니다! 스펙트럼 완벽 정렬!';
+                setTimeout(() => {
+                    currentSortStage = (currentSortStage + 1) % SORT_STAGES.length;
+                    loadSortStage();
+                }, 1600);
+            } else {
+                sfx.playStar();
+                statusEl.className = 'text-xs text-rose-400 font-bold';
+                statusEl.textContent = '❌ 아직 순서가 맞지 않습니다. 다시 생각해보세요!';
+            }
+        }
+
+        // Educational Color Wheel Canvas Generator
+        function drawColorWheel() {
+            const wheelCanvas = document.getElementById('colorWheelCanvas');
+            if (!wheelCanvas) return;
+            const wCtx = wheelCanvas.getContext('2d');
+            const centerX = 90;
+            const centerY = 90;
+            const radius = 75;
+
+            const colors = [
+                '#ff0000', '#ff4000', '#ff8000', '#ffc000', '#ffff00', 
+                '#c0ff00', '#80ff00', '#40ff00', '#00ff00', '#00ff80', 
+                '#00ffff', '#00c0ff', '#0080ff', '#0000ff', '#4000ff', 
+                '#8000ff', '#c000ff', '#ff00ff', '#ff00c0', '#ff0080'
+            ];
+
+            const total = colors.length;
+            const arc = (Math.PI * 2) / total;
+
+            for (let i = 0; i < total; i++) {
+                const angle = i * arc;
+                wCtx.beginPath();
+                wCtx.fillStyle = colors[i];
+                wCtx.moveTo(centerX, centerY);
+                wCtx.arc(centerX, centerY, radius, angle, angle + arc);
+                wCtx.closePath();
+                wCtx.fill();
+            }
+
+            // Inner circle hole
+            wCtx.beginPath();
+            wCtx.fillStyle = '#1e293b';
+            wCtx.arc(centerX, centerY, 30, 0, Math.PI * 2);
+            wCtx.fill();
+        }
+
+        window.addEventListener('load', () => {
+            drawColorWheel();
+        });
+    </script>
+</body>
+</html>

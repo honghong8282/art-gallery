@@ -1,0 +1,244 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+#app { padding: 1.5rem 1rem; max-width: 640px; margin: 0 auto; }
+.screen { display: none; }
+.screen.active { display: block; }
+
+.title-area { text-align: center; margin-bottom: 2rem; }
+.title-area h1 { font-size: 22px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 0.5rem; }
+.title-area p { font-size: 14px; color: var(--color-text-secondary); }
+
+.start-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 2rem; text-align: center; }
+.start-card .emoji { font-size: 48px; margin-bottom: 1rem; }
+.start-card h2 { font-size: 18px; font-weight: 500; margin-bottom: 0.75rem; color: var(--color-text-primary); }
+.start-card p { font-size: 14px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 1.5rem; }
+
+.btn-primary { display: inline-block; background: #534AB7; color: #fff; border: none; border-radius: var(--border-radius-md); padding: 12px 32px; font-size: 15px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; }
+.btn-primary:hover { opacity: 0.88; }
+
+.progress-bar-wrap { background: var(--color-background-secondary); border-radius: 100px; height: 6px; margin-bottom: 1.5rem; }
+.progress-bar-fill { background: #534AB7; height: 6px; border-radius: 100px; transition: width 0.3s; }
+
+.q-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+.q-num { font-size: 13px; color: var(--color-text-secondary); }
+.q-score-badge { font-size: 13px; font-weight: 500; background: #EEEDFE; color: #3C3489; padding: 3px 10px; border-radius: 100px; }
+
+.question-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; margin-bottom: 1rem; }
+.question-card .tag { font-size: 11px; font-weight: 500; background: #E1F5EE; color: #085041; padding: 3px 8px; border-radius: 100px; display: inline-block; margin-bottom: 0.75rem; }
+.question-card .q-text { font-size: 15px; font-weight: 500; color: var(--color-text-primary); line-height: 1.6; }
+
+.hint-box { background: #FAEEDA; border-radius: var(--border-radius-md); padding: 10px 14px; margin-bottom: 1rem; font-size: 13px; color: #633806; display: none; }
+.hint-box.visible { display: block; }
+
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+.choice-btn { background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 12px 14px; font-size: 14px; color: var(--color-text-primary); cursor: pointer; text-align: left; line-height: 1.4; transition: background 0.15s, border-color 0.15s; }
+.choice-btn:hover:not(:disabled) { background: var(--color-background-secondary); border-color: #534AB7; }
+.choice-btn.correct { background: #EAF3DE; border-color: #3B6D11; color: #173404; }
+.choice-btn.wrong { background: #FCEBEB; border-color: #A32D2D; color: #501313; }
+.choice-btn:disabled { cursor: default; }
+
+.action-row { display: flex; gap: 8px; align-items: center; }
+.btn-hint { background: none; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 8px 16px; font-size: 13px; color: var(--color-text-secondary); cursor: pointer; }
+.btn-hint:hover { background: var(--color-background-secondary); }
+.btn-next { margin-left: auto; background: #534AB7; color: #fff; border: none; border-radius: var(--border-radius-md); padding: 10px 24px; font-size: 14px; font-weight: 500; cursor: pointer; display: none; }
+.btn-next:hover { opacity: 0.88; }
+
+.feedback { font-size: 13px; padding: 10px 14px; border-radius: var(--border-radius-md); margin-bottom: 1rem; display: none; }
+.feedback.correct { background: #EAF3DE; color: #27500A; }
+.feedback.wrong { background: #FCEBEB; color: #791F1F; }
+.feedback.visible { display: block; }
+
+.result-card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 2rem; text-align: center; }
+.result-emoji { font-size: 48px; margin-bottom: 0.75rem; }
+.result-score { font-size: 36px; font-weight: 500; color: #534AB7; margin-bottom: 0.25rem; }
+.result-label { font-size: 14px; color: var(--color-text-secondary); margin-bottom: 1.5rem; }
+.result-msg { font-size: 15px; color: var(--color-text-primary); font-weight: 500; margin-bottom: 0.5rem; }
+.result-sub { font-size: 13px; color: var(--color-text-secondary); line-height: 1.6; margin-bottom: 1.5rem; }
+.stat-row { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+.stat-box { flex: 1; background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 0.75rem; }
+.stat-box .s-num { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+.stat-box .s-lbl { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+.btn-row { display: flex; gap: 10px; justify-content: center; }
+.btn-secondary { background: none; border: 0.5px solid var(--color-border-primary); border-radius: var(--border-radius-md); padding: 10px 20px; font-size: 14px; color: var(--color-text-primary); cursor: pointer; }
+.btn-secondary:hover { background: var(--color-background-secondary); }
+</style>
+
+<div id="app">
+  <div id="screen-start" class="screen active">
+    <div class="title-area">
+      <h1>🎨 미술사 퀴즈</h1>
+      <p>중학교 1학년 · 미술 작가와 작품 탐구</p>
+    </div>
+    <div class="start-card">
+      <div class="emoji">🖼️</div>
+      <h2>미술사 도전 퀴즈</h2>
+      <p>세계 유명 미술 작가와 작품에 대한 퀴즈입니다.<br>총 10문제 · 힌트 사용 가능 · 점수 확인</p>
+      <button class="btn-primary" onclick="startGame()">게임 시작</button>
+    </div>
+  </div>
+
+  <div id="screen-quiz" class="screen">
+    <div class="q-meta">
+      <span class="q-num" id="q-num">1 / 10</span>
+      <span class="q-score-badge" id="score-badge">점수: 0</span>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:10%"></div>
+    </div>
+    <div class="question-card">
+      <span class="tag" id="q-tag">작가</span>
+      <p class="q-text" id="q-text"></p>
+    </div>
+    <div class="hint-box" id="hint-box"></div>
+    <div class="choices" id="choices"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="action-row">
+      <button class="btn-hint" onclick="showHint()">💡 힌트 보기</button>
+      <button class="btn-next" id="btn-next" onclick="nextQuestion()">다음 문제 →</button>
+    </div>
+  </div>
+
+  <div id="screen-result" class="screen">
+    <div class="title-area">
+      <h1>🎨 미술사 퀴즈</h1>
+    </div>
+    <div class="result-card">
+      <div class="result-emoji" id="r-emoji">🏆</div>
+      <div class="result-score" id="r-score">0점</div>
+      <div class="result-label">총점 (10문제)</div>
+      <div class="stat-row">
+        <div class="stat-box"><div class="s-num" id="r-correct">0</div><div class="s-lbl">정답</div></div>
+        <div class="stat-box"><div class="s-num" id="r-wrong">0</div><div class="s-lbl">오답</div></div>
+        <div class="stat-box"><div class="s-num" id="r-hint">0</div><div class="s-lbl">힌트 사용</div></div>
+      </div>
+      <div class="result-msg" id="r-msg"></div>
+      <div class="result-sub" id="r-sub"></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="restartGame()">다시 도전</button>
+        <button class="btn-primary" onclick="sendPrompt('미술사 퀴즈를 완료했어요. 오늘 배운 작가들 중 하나를 더 자세히 알려줘!')">작가 더 알아보기 ↗</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  { tag:"작가", text:"'별이 빛나는 밤'을 그린 네덜란드 후기 인상주의 화가는 누구일까요?", choices:["빈센트 반 고흐","클로드 모네","파블로 피카소","살바도르 달리"], answer:0, hint:"귀를 자른 사건으로도 유명하며, 아를에서 고갱과 함께 지냈어요." },
+  { tag:"작품", text:"레오나르도 다빈치가 그린 세계에서 가장 유명한 초상화로, 파리 루브르 박물관에 전시된 작품은?", choices:["모나리자","아테네 학당","최후의 만찬","비너스의 탄생"], answer:0, hint:"수수께끼 같은 미소로 유명한 이탈리아 여인의 초상화예요." },
+  { tag:"작가", text:"<게르니카>를 그린 입체주의(큐비즘)의 창시자는 누구일까요?", choices:["조르주 브라크","파블로 피카소","앙리 마티스","폴 세잔"], answer:1, hint:"스페인 출신으로, 20세기 가장 영향력 있는 화가 중 한 명이에요." },
+  { tag:"작품", text:"클로드 모네가 연작으로 그린 작품으로, 빛의 변화를 담은 연꽃 연못 그림의 제목은?", choices:["인상, 해돋이","수련","건초더미","루앙 대성당"], answer:1, hint:"오랑주리 미술관 타원형 방에 전시된 대형 작품이에요." },
+  { tag:"작가", text:"<절규>로 유명한 표현주의 화가로, 노르웨이 출신인 작가는 누구일까요?", choices:["에드바르 뭉크","구스타프 클림트","에곤 실레","파울 클레"], answer:0, hint:"불안과 공포를 표현한 이 작품은 여러 번 도난당한 적이 있어요." },
+  { tag:"시대", text:"르네상스 시대를 대표하는 '천지창조'와 '최후의 심판'을 시스티나 예배당에 그린 화가는?", choices:["라파엘로","레오나르도 다빈치","미켈란젤로","도나텔로"], answer:2, hint:"조각가이자 화가로, 누워서 천장에 4년간 그림을 그렸다고 해요." },
+  { tag:"작품", text:"살바도르 달리의 초현실주의 대표작으로, 녹아내리는 시계가 등장하는 작품은?", choices:["기억의 지속","갈라의 초상","수수께끼의 욕망","꿈"], answer:0, hint:"시간의 유연성과 꿈을 표현했으며, '부드러운 시계'라고도 불려요." },
+  { tag:"작가", text:"<수련> 연작, <인상, 해돋이> 등을 그려 '인상주의'라는 이름의 유래가 된 프랑스 화가는?", choices:["폴 고갱","오귀스트 르누아르","클로드 모네","카미유 피사로"], answer:2, hint:"지베르니에 직접 연못 정원을 만들고 그림을 그렸어요." },
+  { tag:"시대", text:"다음 중 바로크 시대 화가가 아닌 사람은 누구일까요?", choices:["렘브란트","카라바조","요하네스 페르메이르","빈센트 반 고흐"], answer:3, hint:"빛과 어둠의 강렬한 대비, 드라마틱한 표현이 바로크의 특징이에요." },
+  { tag:"작품", text:"구스타프 클림트의 대표작으로, 황금빛 장식과 두 남녀의 포옹을 담은 작품은?", choices:["아델레 블로흐바우어의 초상","유디트","키스","베토벤 프리즈"], answer:2, hint:"오스트리아 벨베데레 미술관에서 볼 수 있어요." }
+];
+
+let questions = [], current = 0, score = 0, correct = 0, wrong = 0, hintCount = 0, hintUsed = false, answered = false;
+
+function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
+
+function startGame() {
+  questions = shuffle(ALL_QUESTIONS);
+  current = 0; score = 0; correct = 0; wrong = 0; hintCount = 0;
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function renderQuestion() {
+  const q = questions[current];
+  hintUsed = false; answered = false;
+  document.getElementById('q-num').textContent = (current + 1) + ' / 10';
+  document.getElementById('score-badge').textContent = '점수: ' + score;
+  document.getElementById('progress-fill').style.width = ((current + 1) / 10 * 100) + '%';
+  document.getElementById('q-tag').textContent = q.tag;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('hint-box').textContent = '';
+  document.getElementById('hint-box').classList.remove('visible');
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('btn-next').style.display = 'none';
+
+  const choicesEl = document.getElementById('choices');
+  choicesEl.innerHTML = '';
+  q.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = c;
+    btn.onclick = () => selectAnswer(i);
+    choicesEl.appendChild(btn);
+  });
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = questions[current];
+  const btns = document.querySelectorAll('.choice-btn');
+  const fb = document.getElementById('feedback');
+  btns.forEach(b => b.disabled = true);
+  btns[q.answer].classList.add('correct');
+
+  if (idx === q.answer) {
+    const pts = hintUsed ? 5 : 10;
+    score += pts;
+    correct++;
+    btns[idx].classList.add('correct');
+    fb.textContent = hintUsed ? '정답! (힌트 사용으로 +5점)' : '정답! +10점 🎉';
+    fb.className = 'feedback correct visible';
+  } else {
+    wrong++;
+    btns[idx].classList.add('wrong');
+    fb.textContent = '아쉽게도 틀렸어요. 정답은 ' + q.choices[q.answer] + ' 입니다.';
+    fb.className = 'feedback wrong visible';
+  }
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+function showHint() {
+  if (answered || hintUsed) return;
+  hintUsed = true;
+  hintCount++;
+  const q = questions[current];
+  const hb = document.getElementById('hint-box');
+  hb.textContent = '💡 힌트: ' + q.hint;
+  hb.classList.add('visible');
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= 10) {
+    showResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+function showResult() {
+  showScreen('screen-result');
+  const pct = Math.round(score / 100 * 100);
+  let emoji, msg, sub;
+  if (score >= 90) { emoji='🏆'; msg='완벽해요! 미술사 박사 수준이에요!'; sub='모든 작가와 작품을 정확히 알고 있군요. 미술관 탐방도 도전해볼까요?'; }
+  else if (score >= 70) { emoji='🌟'; msg='훌륭해요! 미술사를 잘 알고 있네요.'; sub='몇 문제는 아쉬웠지만 전반적으로 좋은 실력이에요. 조금만 더 공부하면 완벽해질 거예요!'; }
+  else if (score >= 50) { emoji='🎨'; msg='좋은 시작이에요!'; sub='미술사는 외우는 것보다 작품을 직접 보며 익히면 더 재미있어요. 다시 도전해볼까요?'; }
+  else { emoji='📖'; msg='미술사를 더 공부해봐요!'; sub='어렵게 느껴질 수 있지만, 작가의 이야기를 알면 그림이 훨씬 재미있어져요. 힌트를 활용해 다시 도전!'; }
+
+  document.getElementById('r-emoji').textContent = emoji;
+  document.getElementById('r-score').textContent = score + '점';
+  document.getElementById('r-msg').textContent = msg;
+  document.getElementById('r-sub').textContent = sub;
+  document.getElementById('r-correct').textContent = correct;
+  document.getElementById('r-wrong').textContent = wrong;
+  document.getElementById('r-hint').textContent = hintCount;
+}
+
+function restartGame() { startGame(); }
+</script>

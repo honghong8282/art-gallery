@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>컬러 스튜디오: 신입 디자이너의 색채 미션</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts: Noto Sans KR & Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Outfit:wght@600;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 12s linear infinite',
+                        'bounce-short': 'bounce 0.6s ease-in-out 2',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #0f172a;
+            color: #f8fafc;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .color-wheel-bg {
+            background: conic-gradient(
+                from 0deg,
+                #ff0000, #ff7f00, #ffff00, #00ff00, #00ffff, #0000ff, #7f00ff, #ff00ff, #ff0000
+            );
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card-light {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* Color swatch drop shadow & hover */
+        .color-chip {
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.5);
+        }
+
+        .color-chip:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 12px 25px -2px rgba(0, 0, 0, 0.6);
+        }
+
+        .color-chip:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 overflow-x-hidden relative">
+
+    <!-- Background Animated Canvas Orbs -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-30">
+        <div class="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-pink-500 filter blur-3xl animate-pulse-slow"></div>
+        <div class="absolute top-1/2 -right-32 w-96 h-96 rounded-full bg-cyan-500 filter blur-3xl animate-pulse-slow" style="animation-delay: 1.5s;"></div>
+        <div class="absolute -bottom-32 left-1/3 w-96 h-96 rounded-full bg-purple-600 filter blur-3xl animate-pulse-slow" style="animation-delay: 3s;"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="w-full max-w-3xl z-10 relative">
+
+        <!-- Header Bar -->
+        <header class="flex justify-between items-center mb-4 px-2">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full color-wheel-bg animate-spin-slow"></div>
+                <span class="font-outfit font-extrabold text-lg sm:text-xl tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-400">
+                    COLOR STUDIO
+                </span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="soundToggleBtn" onclick="toggleSound()" class="px-3 py-1.5 rounded-full glass-card text-xs sm:text-sm font-medium hover:bg-slate-700/60 transition flex items-center gap-1.5 text-slate-300">
+                    <i id="soundIcon" class="fas fa-volume-up text-indigo-400"></i>
+                    <span id="soundText">소리 ON</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- 1. START / MAIN VIEW -->
+        <div id="mainView" class="glass-card rounded-3xl p-6 sm:p-8 text-center shadow-2xl relative overflow-hidden">
+            <!-- Decorative Badge -->
+            <div class="inline-block px-4 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 text-xs font-bold mb-4 tracking-wider">
+                🎓 중학교 미술 색채 단원 맞춤형 게임
+            </div>
+
+            <h1 class="text-2xl sm:text-4xl font-black mb-3 leading-tight text-white">
+                신입 디자이너의<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-pink-400 to-cyan-300">색채 미션 파서블</span>
+            </h1>
+
+            <p class="text-slate-300 text-sm sm:text-base max-w-md mx-auto mb-6 leading-relaxed">
+                유명 디자인 회사에 입사한 것을 축하합니다! 🎉<br>
+                매일 들어오는 다양한 고객의 색채 의뢰를 해결하고<br>
+                <strong class="text-amber-300">최고의 수석 컬러 디자이너</strong>가 되어보세요.
+            </p>
+
+            <!-- Color Wheel Graphic -->
+            <div class="relative w-36 h-36 sm:w-44 sm:h-44 mx-auto mb-8 my-4 flex items-center justify-center">
+                <div class="absolute inset-0 rounded-full color-wheel-bg p-1.5 shadow-lg shadow-purple-500/20 animate-spin-slow"></div>
+                <div class="absolute inset-3 rounded-full bg-slate-900 flex flex-col items-center justify-center border border-slate-700">
+                    <i class="fas fa-palette text-3xl sm:text-4xl text-amber-400 mb-1"></i>
+                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Design Lab</span>
+                </div>
+            </div>
+
+            <!-- Features Grid -->
+            <div class="grid grid-cols-3 gap-2 sm:gap-3 max-w-md mx-auto mb-8 text-left text-xs text-slate-300">
+                <div class="p-2.5 rounded-xl glass-card-light text-center">
+                    <i class="fas fa-bullseye text-pink-400 text-base mb-1 block"></i>
+                    <span>총 15문제</span>
+                </div>
+                <div class="p-2.5 rounded-xl glass-card-light text-center">
+                    <i class="fas fa-stopwatch text-cyan-400 text-base mb-1 block"></i>
+                    <span>제한시간 20초</span>
+                </div>
+                <div class="p-2.5 rounded-xl glass-card-light text-center">
+                    <i class="fas fa-fire text-amber-400 text-base mb-1 block"></i>
+                    <span>콤보 보너스</span>
+                </div>
+            </div>
+
+            <!-- Highscore Info -->
+            <div class="mb-6 text-sm text-slate-400 flex items-center justify-center gap-2">
+                <i class="fas fa-trophy text-amber-400"></i>
+                <span>나의 최고 기록: <strong id="mainHighScore" class="text-white font-bold">0점</strong></span>
+            </div>
+
+            <!-- Start Button -->
+            <button onclick="startGame()" class="w-full sm:w-auto px-10 py-4 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 hover:from-indigo-600 hover:to-pink-600 text-white font-black text-lg shadow-lg shadow-indigo-500/30 transform hover:-translate-y-1 active:translate-y-0 transition cursor-pointer">
+                <i class="fas fa-play mr-2"></i> 입사 후 첫 의뢰 받기
+            </button>
+        </div>
+
+        <!-- 2. GAME VIEW -->
+        <div id="gameView" class="hidden glass-card rounded-3xl p-4 sm:p-6 shadow-2xl relative">
+            
+            <!-- Top Status Bar -->
+            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 mb-4 p-3 rounded-2xl glass-card-light">
+                <!-- Question Number & Score -->
+                <div class="flex items-center justify-between sm:justify-start gap-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-400">의뢰 번호</span>
+                        <span id="questionNum" class="font-outfit text-lg font-black text-amber-300">01/15</span>
+                    </div>
+                    <div class="h-4 w-[1px] bg-slate-700"></div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-400">점수</span>
+                        <span id="scoreDisplay" class="font-outfit text-lg font-black text-cyan-300">0</span>
+                    </div>
+                </div>
+
+                <!-- Combo Counter -->
+                <div class="flex items-center justify-between sm:justify-end gap-3">
+                    <div id="comboBadge" class="hidden px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-red-500 text-white text-xs font-bold animate-bounce">
+                        🔥 <span id="comboCount">0</span> COMBO!
+                    </div>
+                    <div class="text-xs text-slate-400 flex items-center gap-1">
+                        <i class="fas fa-clock text-pink-400"></i>
+                        <span id="timerText" class="font-outfit text-sm font-bold text-white w-6 text-right">20</span>초
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timer Progress Bar -->
+            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mb-5">
+                <div id="timerBar" class="bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-500 h-full w-full transition-all duration-100 ease-linear"></div>
+            </div>
+
+            <!-- Story / Client Mission Card -->
+            <div class="mb-5 p-4 rounded-2xl bg-slate-900/80 border border-slate-700/60 relative overflow-hidden">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-full bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center shrink-0 text-indigo-300 text-lg">
+                        <i id="clientAvatarIcon" class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-1">
+                            <span id="clientName" class="text-xs font-bold text-indigo-300">고객 의뢰 #1</span>
+                            <span id="missionTypeTag" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold">미션 1. 보색 저격</span>
+                        </div>
+                        <p id="missionStory" class="text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
+                            "고객의 의뢰 내용이 표시됩니다."
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Question Content Area -->
+            <div id="questionArea" class="min-h-[220px] flex flex-col justify-center items-center py-2">
+                <!-- Injected via JavaScript based on mission type -->
+            </div>
+
+            <!-- Answer Feedback Modal / Overlay -->
+            <div id="feedbackOverlay" class="hidden absolute inset-0 z-20 rounded-3xl bg-slate-950/90 backdrop-blur-md p-6 flex flex-col items-center justify-center text-center animate-fadeIn">
+                <div id="feedbackIconBox" class="w-16 h-16 rounded-full flex items-center justify-center text-3xl mb-3">
+                    <!-- Icon injected JS -->
+                </div>
+                <h3 id="feedbackTitle" class="text-2xl font-black mb-2 text-white"></h3>
+                <p id="feedbackBonus" class="text-amber-300 text-sm font-bold mb-3"></p>
+                
+                <!-- Color Theory Explanation Box -->
+                <div class="w-full max-w-md p-4 rounded-2xl bg-slate-900 border border-slate-700 text-left mb-6">
+                    <div class="text-xs text-indigo-300 font-bold mb-1 flex items-center gap-1.5">
+                        <i class="fas fa-lightbulb text-amber-400"></i> 색채 원리 노트
+                    </div>
+                    <p id="feedbackExplanation" class="text-xs sm:text-sm text-slate-300 leading-relaxed"></p>
+                </div>
+
+                <button onclick="nextQuestion()" class="px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-sm hover:brightness-110 active:scale-95 transition cursor-pointer flex items-center gap-2">
+                    <span>다음 의뢰 진행</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- 3. RESULT VIEW -->
+        <div id="resultView" class="hidden glass-card rounded-3xl p-6 sm:p-8 text-center shadow-2xl relative">
+            <div class="inline-block px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold mb-3">
+                🏆 최종 업무 평가 리포트
+            </div>
+
+            <h2 class="text-2xl sm:text-3xl font-black mb-1 text-white">의뢰 완료 결과</h2>
+            <p id="gradeTitle" class="text-amber-300 font-bold text-base mb-6">수석 디자이너 승진!</p>
+
+            <!-- Grade Card -->
+            <div class="w-28 h-28 mx-auto rounded-3xl bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 p-1 mb-6 shadow-xl shadow-purple-500/20">
+                <div class="w-full h-full rounded-[22px] bg-slate-900 flex flex-col items-center justify-center">
+                    <span class="text-xs text-slate-400 font-semibold">획득 등급</span>
+                    <span id="finalGrade" class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-pink-400 font-outfit">S</span>
+                </div>
+            </div>
+
+            <!-- Stats Table Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-lg mx-auto mb-6 text-left">
+                <div class="p-3 rounded-xl glass-card-light">
+                    <span class="text-[11px] text-slate-400 block mb-0.5">최종 점수</span>
+                    <span id="resultScore" class="font-outfit text-xl font-bold text-cyan-300">0</span>
+                </div>
+                <div class="p-3 rounded-xl glass-card-light">
+                    <span class="text-[11px] text-slate-400 block mb-0.5">정답률</span>
+                    <span id="resultAccuracy" class="font-outfit text-xl font-bold text-emerald-300">0%</span>
+                </div>
+                <div class="p-3 rounded-xl glass-card-light">
+                    <span class="text-[11px] text-slate-400 block mb-0.5">맞힌 문제</span>
+                    <span id="resultCorrectCount" class="font-outfit text-xl font-bold text-indigo-300">0 / 15</span>
+                </div>
+                <div class="p-3 rounded-xl glass-card-light">
+                    <span class="text-[11px] text-slate-400 block mb-0.5">최고 콤보</span>
+                    <span id="resultMaxCombo" class="font-outfit text-xl font-bold text-amber-300">0</span>
+                </div>
+            </div>
+
+            <!-- Feedback Message -->
+            <div class="max-w-md mx-auto p-4 rounded-2xl bg-slate-900/90 border border-slate-700/80 mb-8 text-xs sm:text-sm text-slate-300 leading-relaxed text-left">
+                <div class="text-amber-400 font-bold mb-1 flex items-center gap-1.5">
+                    <i class="fas fa-comment-dots"></i> 대표 디자이너의 피드백
+                </div>
+                <p id="evalComment">수고하셨습니다!</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row justify-center gap-3">
+                <button onclick="restartGame()" class="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold text-base shadow-lg cursor-pointer transition">
+                    <i class="fas fa-redo mr-2"></i> 다시 도전하기
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* --------------------------------------------------
+           1. AUDIO SYNTHESIS SYSTEM (Web Audio API)
+           -------------------------------------------------- */
+        let soundEnabled = true;
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const soundIcon = document.getElementById('soundIcon');
+            const soundText = document.getElementById('soundText');
+            if (soundEnabled) {
+                soundIcon.className = "fas fa-volume-up text-indigo-400";
+                soundText.innerText = "소리 ON";
+                playSfx('correct');
+            } else {
+                soundIcon.className = "fas fa-volume-mute text-slate-500";
+                soundText.innerText = "소리 OFF";
+            }
+        }
+
+        function playSfx(type) {
+            if (!soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+
+                if (type === 'correct') {
+                    // Ding-Dong Triad (C5 -> E5 -> G5)
+                    [523.25, 659.25, 783.99].forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + idx * 0.08);
+                        osc.stop(now + idx * 0.08 + 0.3);
+                    });
+                } else if (type === 'wrong') {
+                    // Low Buzzer
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(160, now);
+                    osc.frequency.setValueAtTime(110, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'click') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'combo') {
+                    // Arpeggio
+                    [440, 554.37, 659.25, 880].forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+                        gain.gain.setValueAtTime(0.25, now + idx * 0.06);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.25);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + idx * 0.06);
+                        osc.stop(now + idx * 0.06 + 0.25);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio play error", e);
+            }
+        }
+
+        /* --------------------------------------------------
+           2. QUESTION DATABASE (Middle School Art Standard)
+           -------------------------------------------------- */
+        const MASTER_QUESTIONS = [
+            // MISSION 1: 보색 저격 (Complementary Colors)
+            {
+                type: 1,
+                title: "미션 1. 보색 저격",
+                client: "패션 브랜드 디자이너",
+                avatarIcon: "fa-user-ninja",
+                story: "강렬한 대비 효과를 주어 멀리서도 돋보이는 스포츠웨어 로고를 디자인해야 해요! 제시된 색의 보색을 찾아주세요.",
+                questionColor: { name: "파랑", hex: "#0055ff" },
+                options: [
+                    { name: "주황", hex: "#ff7700", correct: true },
+                    { name: "초록", hex: "#00cc44", correct: false },
+                    { name: "보라", hex: "#8800cc", correct: false },
+                    { name: "노랑", hex: "#ffdd00", correct: false }
+                ],
+                explanation: "파랑의 보색은 '주황'입니다. 색상환에서 서로 마주 보는 보색을 함께 사용하면 서로의 색이 더 선명하고 강렬하게 대비됩니다."
+            },
+            {
+                type: 1,
+                title: "미션 1. 보색 저격",
+                client: "카페 인테리어 디자이너",
+                avatarIcon: "fa-mug-hot",
+                story: "빨간색 벽면에 가장 잘 대비되어 멀리서도 눈에 띄는 보색 간판 포인트를 주려고 합니다.",
+                questionColor: { name: "빨강", hex: "#ff2222" },
+                options: [
+                    { name: "청록", hex: "#00b2a9", correct: true },
+                    { name: "주황", hex: "#ff7700", correct: false },
+                    { name: "남색", hex: "#002266", correct: false },
+                    { name: "자두", hex: "#cc0066", correct: false }
+                ],
+                explanation: "빨강의 대표적인 보색은 '청록(또는 초록 계열)'입니다. 색상환의 반대편 색상을 조합하면 시선 집중도가 극대화됩니다."
+            },
+            {
+                type: 1,
+                title: "미션 1. 보색 저격",
+                client: "동화책 일러스트레이터",
+                avatarIcon: "fa-book-open",
+                story: "노란 해바라기 꽃밭에서 캐릭터가 가장 또렷하게 돋보이도록 배경 보색을 넣고 싶어요.",
+                questionColor: { name: "노랑", hex: "#ffd700" },
+                options: [
+                    { name: "보라", hex: "#7b2cbf", correct: true },
+                    { name: "연두", hex: "#70e000", correct: false },
+                    { name: "분홍", hex: "#ff85a1", correct: false },
+                    { name: "주황", hex: "#ff7b00", correct: false }
+                ],
+                explanation: "노랑의 보색은 '보라'입니다. 노랑과 보라는 명도 차이도 커서 최고 수준의 명쾌한 보색 대비를 이룹니다."
+            },
+
+            // MISSION 2: 색 혼합 실험 (Color Mixing)
+            {
+                type: 2,
+                title: "미션 2. 색 혼합 실험",
+                client: "페인트 조색 전문가",
+                avatarIcon: "fa-paint-roller",
+                story: "고객님이 밝고 활기찬 '주황색' 벽지 페인트를 요청했습니다. 삼원색 물감 중 어떤 색을 섞어야 할까요?",
+                targetColor: { name: "주황", hex: "#ff7700" },
+                requiredIngredients: ["빨강", "노랑"],
+                availableColors: [
+                    { name: "빨강", hex: "#ff2222" },
+                    { name: "노랑", hex: "#ffd700" },
+                    { name: "파랑", hex: "#0055ff" }
+                ],
+                explanation: "주황색은 1차색인 '빨강'과 '노랑'을 1:1로 섞어 만드는 2차색입니다 (색의 혼합/감산혼합)."
+            },
+            {
+                type: 2,
+                title: "미션 2. 색 혼합 실험",
+                client: "원예 가드닝 디자이너",
+                avatarIcon: "fa-seedling",
+                story: "싱그러운 '초록색' 식물 카탈로그를 만들려고 합니다. 물감 중에서 어떤 두 색을 조합해야 할까요?",
+                targetColor: { name: "초록", hex: "#10b981" },
+                requiredIngredients: ["노랑", "파랑"],
+                availableColors: [
+                    { name: "빨강", hex: "#ff2222" },
+                    { name: "노랑", hex: "#ffd700" },
+                    { name: "파랑", hex: "#0055ff" }
+                ],
+                explanation: "초록색은 '노랑'과 '파랑'을 혼합하면 만들어집니다."
+            },
+            {
+                type: 2,
+                title: "미션 2. 색 혼합 실험",
+                client: "신비로운 타로 카드 디자이너",
+                avatarIcon: "fa-magic",
+                story: "신비롭고 우아한 '보라색' 배경지를 직접 조색하려고 합니다. 필요한 두 가지 원색을 골라주세요.",
+                targetColor: { name: "보라", hex: "#8b5cf6" },
+                requiredIngredients: ["빨강", "파랑"],
+                availableColors: [
+                    { name: "빨강", hex: "#ff2222" },
+                    { name: "노랑", hex: "#ffd700" },
+                    { name: "파랑", hex: "#0055ff" }
+                ],
+                explanation: "보라색은 '빨강'과 '파랑'을 섞어서 만드는 2차색입니다."
+            },
+
+            // MISSION 3: 같은 계열 찾기 (Color Harmony / Outlier Detection)
+            {
+                type: 3,
+                title: "미션 3. 같은 계열 찾기",
+                client: "해양 다큐멘터리 포스터 디자이너",
+                avatarIcon: "fa-water",
+                story: "시원한 바다 느낌의 쿨톤 Palette를 구성 중인데, 실수로 다른 색상 계열 색상이 하나 섞였습니다. 계열이 다른 색을 찾아내세요!",
+                colors: [
+                    { name: "하늘색", hex: "#38bdf8", correct: false },
+                    { name: "남색", hex: "#1e3a8a", correct: false },
+                    { name: "청록색", hex: "#0d9488", correct: false },
+                    { name: "빨간색", hex: "#ef4444", correct: true }
+                ],
+                explanation: "하늘, 남색, 청록은 모두 차가운 '파랑 계열(쿨톤)'이지만, 빨간색은 난색(난톤) 계열이므로 다른 계열입니다."
+            },
+            {
+                type: 3,
+                title: "미션 3. 같은 계열 찾기",
+                client: "따뜻한 베이커리 숍 디자이너",
+                avatarIcon: "fa-bread-slice",
+                story: "갓 구운 빵의 따뜻함을 주는 난색(Warm tone) 컬러 컬렉션입니다. 분위기를 깨는 혼자 다른 계열의 색을 고르세요.",
+                colors: [
+                    { name: "주황색", hex: "#f97316", correct: false },
+                    { name: "다홍색", hex: "#f43f5e", correct: false },
+                    { name: "보라색", hex: "#7e22ce", correct: true },
+                    { name: "노란색", hex: "#eab308", correct: false }
+                ],
+                explanation: "주황, 다홍, 노랑은 따뜻함을 주는 난색 계열인 반면, 보라색은 중성색이자 상대적으로 차갑고 이질적인 계열입니다."
+            },
+
+            // MISSION 4: 명도 순서 맞추기 (Value / Lightness Ordering)
+            {
+                type: 4,
+                title: "미션 4. 명도 순서 맞추기",
+                client: "건축 조명 디자이너",
+                avatarIcon: "fa-building",
+                story: "건물 외벽에 위에서 아래로 [가장 밝은 색 → 가장 어두운 색] 순서로 입체감을 주려고 합니다. 명도(Value) 순서대로 클릭하여 정렬하세요!",
+                items: [
+                    { id: 'm1', name: "아주 밝은 파랑", hex: "#dbeafe", valueLevel: 4 },
+                    { id: 'm2', name: "밝은 파랑", hex: "#60a5fa", valueLevel: 3 },
+                    { id: 'm3', name: "중간 파랑", hex: "#2563eb", valueLevel: 2 },
+                    { id: 'm4', name: "어두운 남색", hex: "#1e2255", valueLevel: 1 }
+                ],
+                explanation: "명도는 색의 '밝고 어두운 정도'를 뜻합니다. 흰색이 많이 섞일수록 명도가 높고(밝음), 검은색이 섞일수록 명도가 낮습니다(어두움)."
+            },
+            {
+                type: 4,
+                title: "미션 4. 명도 순서 맞추기",
+                client: "모바일 앱 UI/UX 디자이너",
+                avatarIcon: "fa-mobile-screen",
+                story: "버튼의 누름 효과를 표현하기 위해 [밝은 노랑 → 어두운 노랑] 순서로 계단식 배치를 해주세요.",
+                items: [
+                    { id: 'm1', name: "연한 레몬색", hex: "#fef9c3", valueLevel: 4 },
+                    { id: 'm2', name: "개나리 노랑", hex: "#fde047", valueLevel: 3 },
+                    { id: 'm3', name: "진노랑", hex: "#eab308", valueLevel: 2 },
+                    { id: 'm4', name: "어두운 흑갈색", hex: "#713f12", valueLevel: 1 }
+                ],
+                explanation: "밝은 레몬색이 가장 높은 명도(1순위)이며, 어두운 흑갈색 노랑이 가장 낮은 명도입니다."
+            },
+
+            // MISSION 5: 채도 비교 (Chroma / Saturation)
+            {
+                type: 5,
+                title: "미션 5. 채도 비교",
+                client: "화장품 립스틱 디자이너",
+                avatarIcon: "fa-wand-magic-sparkles",
+                story: "가장 탁하지 않고 선명한 '최고 채도(순색)'의 립스틱 컬러를 하나 골라주세요!",
+                options: [
+                    { name: "탁한 핑크 (회색 섞임)", hex: "#a87179", chroma: "low", correct: false },
+                    { name: "선명한 순수 레드", hex: "#ff0022", chroma: "high", correct: true },
+                    { name: "어둡고 탁한 버건디", hex: "#5c2d34", chroma: "low", correct: false },
+                    { name: "연하고 흐린 파스텔 분홍", hex: "#f3c6ce", chroma: "medium", correct: false }
+                ],
+                explanation: "채도는 '색의 선명한 정도(맑고 탁함)'를 의미합니다. 회색이나 다른 색이 섞이지 않은 맑은 순색이 가장 채도가 높습니다."
+            },
+            {
+                type: 5,
+                title: "미션 5. 채도 비교",
+                client: "스포츠카 도장 디자이너",
+                avatarIcon: "fa-car-side",
+                story: "도로에서 가장 눈에 띄도록 '채도가 가장 높은(가장 맑고 강렬한)' 원색 노랑 차량 도료를 선택하세요.",
+                options: [
+                    { name: "탁한 베이지", hex: "#d6c59d", chroma: "low", correct: false },
+                    { name: "흐린 겨자색", hex: "#a3923a", chroma: "low", correct: false },
+                    { name: "비비드 원색 노랑", hex: "#ffea00", chroma: "high", correct: true },
+                    { name: "탁한 회갈색", hex: "#635c43", chroma: "low", correct: false }
+                ],
+                explanation: "원색 노랑(#ffea00)처럼 순수한 색일수록 채도가 높고 강렬해 보입니다."
+            },
+
+            // MISSION 6: 분위기 만들기 (Color Mood & Emotion)
+            {
+                type: 6,
+                title: "미션 6. 분위기 연출",
+                client: "이벤트 기획자",
+                avatarIcon: "fa-fire-flame-curved",
+                story: "스포츠 경기의 열정과 에너지(🔥)를 폭발시킬 수 있는 가장 어울리는 대표 주제 색상을 선택해주세요.",
+                theme: "🔥 열정과 에너지",
+                options: [
+                    { name: "강렬한 빨강", hex: "#ef4444", correct: true },
+                    { name: "차분한 쥐색", hex: "#64748b", correct: false },
+                    { name: "고요한 연파랑", hex: "#93c5fd", correct: false },
+                    { name: "어두운 밤색", hex: "#3b2314", correct: false }
+                ],
+                explanation: "빨강은 심장 박동을 높이고 열정, 에너지, 활력을 상징하는 대표적인 난색입니다."
+            },
+            {
+                type: 6,
+                title: "미션 6. 분위기 연출",
+                client: "에어컨 / 냉장고 광고 디자이너",
+                avatarIcon: "fa-snowflake",
+                story: "보기만 해도 머릿속까지 상쾌해지는 '❄ 차가움과 청량함'의 느낌을 전달하는 색상은 무엇일까요?",
+                theme: "❄ 차가움과 청량함",
+                options: [
+                    { name: "따뜻한 오렌지", hex: "#f97316", correct: false },
+                    { name: "청량한 시안 블루", hex: "#06b6d4", correct: true },
+                    { name: "포근한 아이보리", hex: "#fef3c7", correct: false },
+                    { name: "열정적인 다홍", hex: "#e11d48", correct: false }
+                ],
+                explanation: "파랑/시안 계열은 차가움, 청량함, 신선한 바람을 상징하는 대표적인 쿨톤(한색)입니다."
+            },
+            {
+                type: 6,
+                title: "미션 6. 분위기 연출",
+                client: "친환경 유기농 화장품 브랜드",
+                avatarIcon: "fa-leaf",
+                story: "자연의 생명력과 평화로움, 힐링(🌿)을 전달할 수 있는 메인 브랜드 컬러를 선택하세요.",
+                theme: "🌿 자연과 힐링",
+                options: [
+                    { name: "자연의 그린", hex: "#22c55e", correct: true },
+                    { name: "자극적인 마젠타", hex: "#d946ef", correct: false },
+                    { name: "화려한 골드", hex: "#eab308", correct: false },
+                    { name: "네온 퍼플", hex: "#a855f7", correct: false }
+                ],
+                explanation: "초록색은 평화, 안식, 자연, 건강 및 휴식을 연상시키는 중성색입니다."
+            },
+
+            // MISSION 7: 색상환 퍼즐 (Color Wheel Completion)
+            {
+                type: 7,
+                title: "미션 7. 색상환 퍼즐",
+                client: "미술 교과서 출판사",
+                avatarIcon: "fa-graduation-cap",
+                story: "색상환 표지 교재에 구멍이 뚫렸어요! [빨강 - ? - 노랑] 순서로 이어지는 색상환의 ❓ 빈칸에 들어갈 중간 색을 맞춰주세요.",
+                wheelSeq: ["빨강", "❓", "노랑"],
+                options: [
+                    { name: "주황", hex: "#ff7700", correct: true },
+                    { name: "보라", hex: "#8800cc", correct: false },
+                    { name: "파랑", hex: "#0055ff", correct: false },
+                    { name: "남색", hex: "#001166", correct: false }
+                ],
+                explanation: "12색상환에서 빨강과 노랑 사이의 중간 단계 색은 '주황'입니다."
+            },
+            {
+                type: 7,
+                title: "미션 7. 색상환 퍼즐",
+                client: "디자인 아카데미 강사",
+                avatarIcon: "fa-chalkboard-teacher",
+                story: "[노랑 - ? - 파랑] 으로 연결되는 색상환 위치에서 ❓에 들어갈 적절한 색을 찾아주세요.",
+                wheelSeq: ["노랑", "❓", "파랑"],
+                options: [
+                    { name: "초록", hex: "#10b981", correct: true },
+                    { name: "자주", hex: "#c026d3", correct: false },
+                    { name: "주황", hex: "#f97316", correct: false },
+                    { name: "갈색", hex: "#78350f", correct: false }
+                ],
+                explanation: "색상환에서 노랑과 파랑 사이에 위치하는 이웃 색상은 '초록'입니다."
+            }
+        ];
+
+        /* --------------------------------------------------
+           3. GAME STATE & GAME ENGINE
+           -------------------------------------------------- */
+        let gameQuestions = [];
+        let currentIndex = 0;
+        let score = 0;
+        let combo = 0;
+        let maxCombo = 0;
+        let correctAnswersCount = 0;
+        let timerInterval = null;
+        let timeLeft = 20;
+        let questionStartTime = 0;
+
+        // Interactive State for Mission 2 & Mission 4
+        let selectedMixColors = [];
+        let orderedItems = [];
+
+        // LocalStorage Key
+        const HIGH_SCORE_KEY = "color_studio_high_score";
+
+        // Initialize Main View on DOM Ready
+        window.onload = function() {
+            const savedHighScore = localStorage.getItem(HIGH_SCORE_KEY) || 0;
+            document.getElementById('mainHighScore').innerText = `${savedHighScore}점`;
+        };
+
+        // Shuffle utility array
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function startGame() {
+            playSfx('click');
+            score = 0;
+            combo = 0;
+            maxCombo = 0;
+            correctAnswersCount = 0;
+            currentIndex = 0;
+
+            // Pick 15 random questions from master pool (with fallback duplication if needed)
+            let pool = shuffleArray(MASTER_QUESTIONS);
+            while (pool.length < 15) {
+                pool = pool.concat(shuffleArray(MASTER_QUESTIONS));
+            }
+            gameQuestions = pool.slice(0, 15);
+
+            document.getElementById('mainView').classList.add('hidden');
+            document.getElementById('resultView').classList.add('hidden');
+            document.getElementById('gameView').classList.remove('hidden');
+
+            renderCurrentQuestion();
+        }
+
+        function renderCurrentQuestion() {
+            const q = gameQuestions[currentIndex];
+            
+            // Hide Overlay
+            document.getElementById('feedbackOverlay').classList.add('hidden');
+
+            // Reset UI Bar
+            document.getElementById('questionNum').innerText = `${String(currentIndex + 1).padStart(2, '0')}/15`;
+            document.getElementById('scoreDisplay').innerText = score;
+            
+            if (combo >= 2) {
+                document.getElementById('comboBadge').classList.remove('hidden');
+                document.getElementById('comboCount').innerText = combo;
+            } else {
+                document.getElementById('comboBadge').classList.add('hidden');
+            }
+
+            // Update Client Card Info
+            document.getElementById('clientName').innerText = `고객 의뢰 #${currentIndex + 1} (${q.client})`;
+            document.getElementById('missionTypeTag').innerText = q.title;
+            document.getElementById('missionStory').innerText = `"${q.story}"`;
+            document.getElementById('clientAvatarIcon').className = `fas ${q.avatarIcon || 'fa-user-tie'}`;
+
+            // Reset State for specific missions
+            selectedMixColors = [];
+            orderedItems = [];
+
+            // Render Mission Interactive Body
+            const area = document.getElementById('questionArea');
+            area.innerHTML = '';
+
+            switch (q.type) {
+                case 1: renderMission1(q, area); break;
+                case 2: renderMission2(q, area); break;
+                case 3: renderMission3(q, area); break;
+                case 4: renderMission4(q, area); break;
+                case 5: renderMission5(q, area); break;
+                case 6: renderMission6(q, area); break;
+                case 7: renderMission7(q, area); break;
+            }
+
+            // Start 20s Timer
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 20;
+            questionStartTime = Date.now();
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                if (timeLeft <= 0) {
+                    timeLeft = 0;
+                    updateTimerDisplay();
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                } else {
+                    updateTimerDisplay();
+                }
+            }, 100);
+        }
+
+        function updateTimerDisplay() {
+            const text = document.getElementById('timerText');
+            const bar = document.getElementById('timerBar');
+            text.innerText = Math.ceil(timeLeft);
+            
+            const percentage = (timeLeft / 20) * 100;
+            bar.style.width = `${percentage}%`;
+
+            if (timeLeft <= 5) {
+                bar.className = "bg-gradient-to-r from-red-500 to-amber-500 h-full transition-all duration-100 ease-linear animate-pulse";
+            } else {
+                bar.className = "bg-gradient-to-r from-cyan-400 via-indigo-400 to-pink-500 h-full transition-all duration-100 ease-linear";
+            }
+        }
+
+        // MISSION 1: 보색 저격 UI
+        function renderMission1(q, container) {
+            let html = `
+                <div class="text-center mb-6">
+                    <span class="text-xs text-slate-400 block mb-2 font-semibold">제시된 원본 색상</span>
+                    <div class="w-24 h-24 rounded-2xl mx-auto color-chip flex items-center justify-center border-2 border-white/20" style="background-color: ${q.questionColor.hex}">
+                        <span class="font-black text-white drop-shadow-md text-sm">${q.questionColor.name}</span>
+                    </div>
+                </div>
+                <div class="w-full max-w-md grid grid-cols-2 gap-3">
+            `;
+            q.options.forEach((opt, idx) => {
+                html += `
+                    <button onclick="checkAnswer(${opt.correct})" class="color-chip py-3.5 px-4 rounded-xl flex items-center gap-3 border border-white/10 hover:border-white/40 cursor-pointer text-left" style="background-color: ${opt.hex}">
+                        <div class="w-5 h-5 rounded-full border border-white/40 bg-black/20 flex items-center justify-center text-[10px] font-bold text-white">${idx+1}</div>
+                        <span class="font-bold text-white drop-shadow-md text-sm">${opt.name}</span>
+                    </button>
+                `;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // MISSION 2: 색 혼합 실험 UI
+        function renderMission2(q, container) {
+            let html = `
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+                    <!-- Target -->
+                    <div class="text-center">
+                        <span class="text-xs text-slate-400 block mb-1">목표 색상</span>
+                        <div class="w-20 h-20 rounded-2xl color-chip flex items-center justify-center border-2 border-amber-300" style="background-color: ${q.targetColor.hex}">
+                            <span class="font-black text-white text-xs drop-shadow-md">${q.targetColor.name}</span>
+                        </div>
+                    </div>
+                    <i class="fas fa-equals text-slate-500 text-lg hidden sm:block"></i>
+                    <!-- Mixed Preview -->
+                    <div class="text-center">
+                        <span class="text-xs text-slate-400 block mb-1">나의 혼합 결과</span>
+                        <div id="mixResultBox" class="w-20 h-20 rounded-2xl border-2 border-dashed border-slate-600 flex flex-col items-center justify-center bg-slate-900 transition-all">
+                            <span id="mixResultText" class="text-[11px] text-slate-500 font-medium">색 선택</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selectable Primary Buttons -->
+                <div class="flex justify-center gap-3 mb-4">
+            `;
+            q.availableColors.forEach((c) => {
+                html += `
+                    <button onclick="toggleMixColor('${c.name}', '${c.hex}')" id="btn-mix-${c.name}" class="color-chip px-4 py-3 rounded-xl border border-white/20 flex items-center gap-2 cursor-pointer transition" style="background-color: ${c.hex}">
+                        <i id="check-mix-${c.name}" class="fas fa-circle text-xs text-white/50"></i>
+                        <span class="font-bold text-white drop-shadow text-sm">${c.name}</span>
+                    </button>
+                `;
+            });
+            html += `
+                </div>
+                <button onclick="submitMixAnswer()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs sm:text-sm hover:brightness-110 active:scale-95 transition shadow-md">
+                    <i class="fas fa-flask mr-1"></i> 혼합 제출하기
+                </button>
+            `;
+            container.innerHTML = html;
+        }
+
+        function toggleMixColor(colorName, colorHex) {
+            playSfx('click');
+            const idx = selectedMixColors.indexOf(colorName);
+            if (idx > -1) {
+                selectedMixColors.splice(idx, 1);
+            } else {
+                if (selectedMixColors.length >= 2) {
+                    selectedMixColors.shift(); // keep max 2 colors
+                }
+                selectedMixColors.push(colorName);
+            }
+
+            // Update Mix Preview UI
+            const q = gameQuestions[currentIndex];
+            const mixBox = document.getElementById('mixResultBox');
+            const mixText = document.getElementById('mixResultText');
+
+            // Reset borders
+            q.availableColors.forEach(c => {
+                const btn = document.getElementById(`btn-mix-${c.name}`);
+                const icon = document.getElementById(`check-mix-${c.name}`);
+                if (selectedMixColors.includes(c.name)) {
+                    btn.classList.add('ring-4', 'ring-white');
+                    icon.className = "fas fa-check-circle text-xs text-white";
+                } else {
+                    btn.classList.remove('ring-4', 'ring-white');
+                    icon.className = "fas fa-circle text-xs text-white/50";
+                }
+            });
+
+            if (selectedMixColors.length === 0) {
+                mixBox.style.backgroundColor = '#0f172a';
+                mixText.innerText = '색 선택';
+            } else if (selectedMixColors.length === 1) {
+                const c1 = q.availableColors.find(c => c.name === selectedMixColors[0]);
+                mixBox.style.backgroundColor = c1.hex;
+                mixText.innerText = c1.name;
+            } else {
+                // Computed mix color preview
+                mixText.innerText = selectedMixColors.join('+');
+                if (selectedMixColors.includes('빨강') && selectedMixColors.includes('노랑')) mixBox.style.backgroundColor = '#ff7700';
+                else if (selectedMixColors.includes('노랑') && selectedMixColors.includes('파랑')) mixBox.style.backgroundColor = '#10b981';
+                else if (selectedMixColors.includes('빨강') && selectedMixColors.includes('파랑')) mixBox.style.backgroundColor = '#8b5cf6';
+                else mixBox.style.backgroundColor = '#475569';
+            }
+        }
+
+        function submitMixAnswer() {
+            const q = gameQuestions[currentIndex];
+            const isCorrect = (selectedMixColors.length === q.requiredIngredients.length) &&
+                q.requiredIngredients.every(c => selectedMixColors.includes(c));
+            checkAnswer(isCorrect);
+        }
+
+        // MISSION 3: 같은 계열 찾기 UI
+        function renderMission3(q, container) {
+            let html = `
+                <p class="text-xs text-slate-400 mb-4 font-semibold">다음 4가지 색 중 혼자 계열이 다른 색 1개를 고르세요.</p>
+                <div class="w-full max-w-md grid grid-cols-2 gap-3">
+            `;
+            q.colors.forEach((c) => {
+                html += `
+                    <button onclick="checkAnswer(${c.correct})" class="color-chip py-5 px-4 rounded-2xl flex flex-col items-center justify-center border border-white/20 cursor-pointer" style="background-color: ${c.hex}">
+                        <span class="font-black text-white drop-shadow-md text-sm">${c.name}</span>
+                    </button>
+                `;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // MISSION 4: 명도 순서 맞추기 UI (Click Order System)
+        function renderMission4(q, container) {
+            orderedItems = [];
+            let html = `
+                <p class="text-xs text-slate-400 mb-3 font-semibold">
+                    <span class="text-amber-300">밝은 색(명도 High) → 어두운 색(명도 Low)</span> 순서대로 차례대로 클릭하세요!
+                </p>
+                <div class="w-full max-w-md grid grid-cols-2 gap-2.5 mb-4" id="m4-container">
+            `;
+            const shuffledItems = shuffleArray(q.items);
+            shuffledItems.forEach((item) => {
+                html += `
+                    <button onclick="clickM4Item('${item.id}')" id="m4-btn-${item.id}" class="color-chip py-4 px-3 rounded-xl border border-white/20 flex items-center justify-between cursor-pointer" style="background-color: ${item.hex}">
+                        <span class="font-bold text-slate-900 drop-shadow-sm text-xs bg-white/80 px-2 py-0.5 rounded-md">${item.name}</span>
+                        <span id="m4-badge-${item.id}" class="w-6 h-6 rounded-full bg-slate-900/60 border border-white/30 text-white text-xs font-black flex items-center justify-center">?</span>
+                    </button>
+                `;
+            });
+            html += `
+                </div>
+                <button onclick="submitM4Answer()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-xs sm:text-sm hover:brightness-110 active:scale-95 transition">
+                    <i class="fas fa-check mr-1"></i> 순서 제출하기
+                </button>
+            `;
+            container.innerHTML = html;
+        }
+
+        function clickM4Item(itemId) {
+            playSfx('click');
+            const index = orderedItems.indexOf(itemId);
+            const badge = document.getElementById(`m4-badge-${itemId}`);
+            const btn = document.getElementById(`m4-btn-${itemId}`);
+
+            if (index > -1) {
+                // Unselect
+                orderedItems.splice(index, 1);
+                btn.classList.remove('ring-4', 'ring-amber-400');
+            } else {
+                if (orderedItems.length < 4) {
+                    orderedItems.push(itemId);
+                    btn.classList.add('ring-4', 'ring-amber-400');
+                }
+            }
+
+            // Update all badges
+            const q = gameQuestions[currentIndex];
+            q.items.forEach(item => {
+                const b = document.getElementById(`m4-badge-${item.id}`);
+                const idx = orderedItems.indexOf(item.id);
+                if (idx > -1) {
+                    b.innerText = `${idx + 1}`;
+                    b.className = "w-6 h-6 rounded-full bg-amber-400 text-slate-950 text-xs font-black flex items-center justify-center shadow";
+                } else {
+                    b.innerText = "?";
+                    b.className = "w-6 h-6 rounded-full bg-slate-900/60 border border-white/30 text-white text-xs font-black flex items-center justify-center";
+                }
+            });
+        }
+
+        function submitM4Answer() {
+            const q = gameQuestions[currentIndex];
+            if (orderedItems.length !== 4) {
+                return; // Must select all 4
+            }
+            // Correct order: highest valueLevel (4) down to lowest (1)
+            const sortedTargetIds = [...q.items].sort((a, b) => b.valueLevel - a.valueLevel).map(i => i.id);
+            const isCorrect = JSON.stringify(orderedItems) === JSON.stringify(sortedTargetIds);
+            checkAnswer(isCorrect);
+        }
+
+        // MISSION 5: 채도 비교 UI
+        function renderMission5(q, container) {
+            let html = `
+                <p class="text-xs text-slate-400 mb-4 font-semibold">다음 카드 중 가장 탁하지 않고 선명한 '최고 채도' 색상을 고르세요.</p>
+                <div class="w-full max-w-md grid grid-cols-2 gap-3">
+            `;
+            q.options.forEach((opt) => {
+                html += `
+                    <button onclick="checkAnswer(${opt.correct})" class="color-chip py-4 px-3 rounded-xl border border-white/20 flex flex-col items-center justify-center cursor-pointer text-center" style="background-color: ${opt.hex}">
+                        <span class="font-bold text-white drop-shadow text-xs sm:text-sm mb-0.5">${opt.name}</span>
+                    </button>
+                `;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // MISSION 6: 분위기 연출 UI
+        function renderMission6(q, container) {
+            let html = `
+                <div class="text-center mb-5">
+                    <span class="text-xs text-slate-400 block mb-1">표현해야 할 분위기 키워드</span>
+                    <span class="text-lg font-black text-amber-300 px-4 py-1.5 rounded-full bg-slate-800 border border-amber-400/30">${q.theme}</span>
+                </div>
+                <div class="w-full max-w-md grid grid-cols-2 gap-3">
+            `;
+            q.options.forEach((opt) => {
+                html += `
+                    <button onclick="checkAnswer(${opt.correct})" class="color-chip py-4 px-3 rounded-xl border border-white/20 flex flex-col items-center justify-center cursor-pointer" style="background-color: ${opt.hex}">
+                        <span class="font-bold text-white drop-shadow text-xs sm:text-sm">${opt.name}</span>
+                    </button>
+                `;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        // MISSION 7: 색상환 퍼즐 UI
+        function renderMission7(q, container) {
+            let html = `
+                <div class="flex items-center justify-center gap-2 mb-6">
+                    <div class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 font-bold text-sm text-slate-200">${q.wheelSeq[0]}</div>
+                    <i class="fas fa-arrow-right text-slate-500 text-xs"></i>
+                    <div class="px-5 py-2.5 rounded-xl bg-amber-500/20 border-2 border-dashed border-amber-400 font-black text-base text-amber-300 animate-pulse">❓ 빈칸</div>
+                    <i class="fas fa-arrow-right text-slate-500 text-xs"></i>
+                    <div class="px-4 py-2 rounded-xl bg-slate-800 border border-slate-700 font-bold text-sm text-slate-200">${q.wheelSeq[2]}</div>
+                </div>
+                <div class="w-full max-w-md grid grid-cols-2 gap-3">
+            `;
+            q.options.forEach((opt) => {
+                html += `
+                    <button onclick="checkAnswer(${opt.correct})" class="color-chip py-4 px-3 rounded-xl border border-white/20 flex flex-col items-center justify-center cursor-pointer" style="background-color: ${opt.hex}">
+                        <span class="font-bold text-white drop-shadow text-sm">${opt.name}</span>
+                    </button>
+                `;
+            });
+            html += `</div>`;
+            container.innerHTML = html;
+        }
+
+        /* --------------------------------------------------
+           4. ANSWER VALIDATION & FEEDBACK SYSTEM
+           -------------------------------------------------- */
+        function checkAnswer(isCorrect) {
+            clearInterval(timerInterval);
+            const elapsedTime = (Date.now() - questionStartTime) / 1000;
+            const q = gameQuestions[currentIndex];
+
+            const overlay = document.getElementById('feedbackOverlay');
+            const iconBox = document.getElementById('feedbackIconBox');
+            const title = document.getElementById('feedbackTitle');
+            const bonusText = document.getElementById('feedbackBonus');
+            const expText = document.getElementById('feedbackExplanation');
+
+            let addedScore = 0;
+            let speedBonus = false;
+
+            if (isCorrect) {
+                correctAnswersCount++;
+                combo++;
+                if (combo > maxCombo) maxCombo = combo;
+
+                addedScore += 100;
+                // Speed bonus within 5 seconds
+                if (elapsedTime <= 5.0) {
+                    addedScore += 50;
+                    speedBonus = true;
+                }
+
+                // Combo bonus
+                if (combo >= 5) {
+                    addedScore += 100;
+                }
+
+                score += addedScore;
+
+                // Sound & Confetti Effect
+                if (combo >= 3) {
+                    playSfx('combo');
+                } else {
+                    playSfx('correct');
+                }
+
+                confetti({
+                    particleCount: combo >= 3 ? 80 : 40,
+                    spread: 60,
+                    origin: { y: 0.6 }
+                });
+
+                iconBox.className = "w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 text-emerald-400 flex items-center justify-center text-3xl mb-3";
+                iconBox.innerHTML = `<i class="fas fa-check"></i>`;
+                title.innerText = "의뢰 성공! 완벽해요 🎨";
+                title.className = "text-2xl font-black mb-1 text-emerald-300";
+
+                let bonusString = `+${addedScore}점 획득!`;
+                if (speedBonus) bonusString += " (⚡ 5초 이내 스피드 보너스 +50)";
+                if (combo >= 5) bonusString += " (🔥 5연속 콤보 보너스 +100)";
+                bonusText.innerText = bonusString;
+
+            } else {
+                combo = 0; // Reset combo
+                playSfx('wrong');
+
+                iconBox.className = "w-16 h-16 rounded-full bg-rose-500/20 border-2 border-rose-400 text-rose-400 flex items-center justify-center text-3xl mb-3";
+                iconBox.innerHTML = `<i class="fas fa-xmark"></i>`;
+                title.innerText = "아쉬워요! 의뢰 실패";
+                title.className = "text-2xl font-black mb-1 text-rose-300";
+                bonusText.innerText = "+0점";
+            }
+
+            expText.innerText = q.explanation;
+            overlay.classList.remove('hidden');
+        }
+
+        function handleTimeOut() {
+            const q = gameQuestions[currentIndex];
+            combo = 0;
+            playSfx('wrong');
+
+            const overlay = document.getElementById('feedbackOverlay');
+            const iconBox = document.getElementById('feedbackIconBox');
+            const title = document.getElementById('feedbackTitle');
+            const bonusText = document.getElementById('feedbackBonus');
+            const expText = document.getElementById('feedbackExplanation');
+
+            iconBox.className = "w-16 h-16 rounded-full bg-amber-500/20 border-2 border-amber-400 text-amber-400 flex items-center justify-center text-3xl mb-3";
+            iconBox.innerHTML = `<i class="fas fa-hourglass-end"></i>`;
+            title.innerText = "제한시간 초과!";
+            title.className = "text-2xl font-black mb-1 text-amber-300";
+            bonusText.innerText = "+0점 (시간 종료)";
+
+            expText.innerText = q.explanation;
+            overlay.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            playSfx('click');
+            currentIndex++;
+            if (currentIndex < 15) {
+                renderCurrentQuestion();
+            } else {
+                finishGame();
+            }
+        }
+
+        /* --------------------------------------------------
+           5. GAME END & EVALUATION REPORT
+           -------------------------------------------------- */
+        function finishGame() {
+            document.getElementById('gameView').classList.add('hidden');
+            document.getElementById('resultView').classList.remove('hidden');
+
+            const accuracy = Math.round((correctAnswersCount / 15) * 100);
+
+            // Calculate Grade
+            let grade = 'C';
+            let gradeText = '인턴 디자이너 (연습이 필요해요)';
+            let comment = '색의 기본 원리를 조금 더 학습하면 훌륭한 디자이너가 될 수 있어요!';
+
+            if (score >= 1800) {
+                grade = 'S';
+                gradeText = '👑 수석 디자이너 승진!';
+                comment = '완벽한 색채 감각입니다! 고객들의 어떤 까다로운 색채 의뢰도 완벽히 해결할 수 있는 최고의 아티스트입니다.';
+            } else if (score >= 1400) {
+                grade = 'A';
+                gradeText = '🌟 우수 컬러 디자이너';
+                comment = '색상, 명도, 채도의 원리를 훌륭하게 파악하고 있습니다. 조금만 더 스피드를 올리면 수석 디자이너가 될 수 있어요!';
+            } else if (score >= 1000) {
+                grade = 'B';
+                gradeText = '🎨 정식 디자이너 승급';
+                comment = '기본기가 탄탄한 디자이너입니다. 복습을 통해 보색과 색 혼합을 더 익혀보세요!';
+            }
+
+            document.getElementById('finalGrade').innerText = grade;
+            document.getElementById('gradeTitle').innerText = gradeText;
+            document.getElementById('resultScore').innerText = score;
+            document.getElementById('resultAccuracy').innerText = `${accuracy}%`;
+            document.getElementById('resultCorrectCount').innerText = `${correctAnswersCount} / 15`;
+            document.getElementById('resultMaxCombo').innerText = maxCombo;
+            document.getElementById('evalComment').innerText = comment;
+
+            // Save High Score in LocalStorage
+            const prevHigh = parseInt(localStorage.getItem(HIGH_SCORE_KEY) || 0, 10);
+            if (score > prevHigh) {
+                localStorage.setItem(HIGH_SCORE_KEY, score);
+                document.getElementById('mainHighScore').innerText = `${score}점`;
+            }
+
+            // Confetti for completion
+            confetti({
+                particleCount: 120,
+                spread: 80,
+                origin: { y: 0.5 }
+            });
+        }
+
+        function restartGame() {
+            playSfx('click');
+            startGame();
+        }
+    </script>
+</body>
+</html>

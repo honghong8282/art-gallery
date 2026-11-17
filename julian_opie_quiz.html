@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>줄리아 오피 & 팝아트 퀴즈</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --y:#FFE400;--r:#D4001A;--b:#00C8FF;--pk:#FF9ECD;--gr:#6BFF6B;
+  --dk:#111111;--wh:#FFFFFF;
+}
+body{
+  background:var(--y);
+  font-family:'Noto Sans KR',sans-serif;
+  min-height:100vh;
+  padding:2rem 1rem 4rem;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:radial-gradient(circle,var(--dk) 1.5px,transparent 1.5px);
+  background-size:22px 22px;opacity:.05;pointer-events:none;z-index:0;
+}
+.wrap{max-width:760px;margin:0 auto;position:relative;z-index:1}
+
+/* HEADER */
+.pop-header{
+  background:var(--dk);border:4px solid var(--dk);
+  padding:2rem 2rem 1.5rem;text-align:center;
+  position:relative;margin-bottom:2rem;
+}
+.pop-header::after{content:'';position:absolute;right:-7px;bottom:-7px;width:100%;height:100%;background:var(--r);z-index:-1}
+.pop-title{font-family:'Bebas Neue',sans-serif;font-size:4rem;color:var(--y);letter-spacing:3px;line-height:1}
+.pop-sub{font-size:1rem;font-weight:800;color:var(--wh);margin-top:.4rem;letter-spacing:2px}
+.pop-badge{display:inline-block;background:var(--r);color:var(--wh);font-weight:800;font-size:.8rem;padding:4px 16px;margin-top:.7rem;letter-spacing:2px;border:2px solid var(--wh)}
+
+/* INTRO BOX */
+.intro-wrap{background:var(--wh);border:3px solid var(--dk);padding:1.4rem 1.6rem;margin-bottom:1.5rem;position:relative}
+.intro-wrap::after{content:'';position:absolute;right:-6px;bottom:-6px;width:100%;height:100%;background:var(--dk);z-index:-1}
+.intro-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--r);letter-spacing:2px;margin-bottom:.6rem}
+.intro-text{font-size:.9rem;font-weight:700;color:var(--dk);line-height:1.75}
+.artist-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:.9rem 0}
+.artist-card{border:2.5px solid var(--dk);padding:.9rem 1rem;position:relative}
+.artist-card::after{content:'';position:absolute;right:-4px;bottom:-4px;width:100%;height:100%;background:var(--dk);z-index:-1}
+.artist-card.blue{background:var(--b)}
+.artist-card.pink{background:var(--pk)}
+.artist-card h4{font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--dk);letter-spacing:1px;margin-bottom:.35rem}
+.artist-card p{font-size:.82rem;font-weight:700;color:var(--dk);line-height:1.5}
+.tag-row{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.7rem}
+.tag{background:var(--dk);color:var(--y);font-size:.72rem;font-weight:800;padding:3px 10px;letter-spacing:1px}
+
+/* SECTION LABEL */
+.section-label{
+  font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--wh);
+  background:var(--r);display:inline-block;
+  padding:5px 24px 5px 18px;margin:1.8rem 0 1rem;
+  border:3px solid var(--dk);letter-spacing:2px;
+  clip-path:polygon(0 0,95% 0,100% 50%,95% 100%,0 100%);
+}
+
+/* QUESTION BOX */
+.q-box{
+  background:var(--wh);border:3px solid var(--dk);
+  padding:1.2rem 1.4rem;margin:.7rem 0;
+  position:relative;transition:transform .15s;
+}
+.q-box::after{content:'';position:absolute;right:-5px;bottom:-5px;width:100%;height:100%;background:var(--dk);z-index:-1}
+.q-num{font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--r);letter-spacing:1px;margin-bottom:.3rem}
+.q-text{font-size:.95rem;font-weight:800;color:var(--dk);line-height:1.55;margin-bottom:.8rem}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.opt-btn{
+  background:var(--wh);border:2.5px solid var(--dk);
+  padding:.55rem .75rem;font-family:'Noto Sans KR',sans-serif;
+  font-weight:800;font-size:.83rem;cursor:pointer;
+  text-align:left;transition:all .12s;color:var(--dk);
+}
+.opt-btn:hover{background:var(--y);transform:translate(-2px,-2px)}
+.opt-btn.selected{background:var(--y);border-color:var(--r)}
+.opt-btn.correct{background:var(--gr);border-color:#008800;color:#004400}
+.opt-btn.wrong{background:#FF6B6B;border-color:#880000;color:#440000}
+.opt-btn:disabled{cursor:default}
+
+/* SUBJECTIVE */
+.subj-label{font-size:.87rem;font-weight:800;color:var(--dk);display:block;margin-bottom:.4rem}
+.subj-input{
+  width:100%;border:2.5px solid var(--dk);
+  padding:.55rem .8rem;font-family:'Noto Sans KR',sans-serif;
+  font-weight:700;font-size:.9rem;color:var(--dk);
+  background:var(--wh);resize:none;min-height:62px;
+  transition:border-color .12s;
+}
+.subj-input:focus{outline:none;border-color:var(--r);background:#FFFDE0}
+
+/* ARTWORK */
+.artwork-reveal{
+  background:#f5f0e8;border:3px dashed var(--dk);
+  padding:.9rem;margin:.7rem 0 .5rem;text-align:center;
+}
+.artwork-reveal canvas{display:block;margin:0 auto;border:2px solid var(--dk)}
+.artwork-hint{font-size:.76rem;font-weight:800;color:#777;margin-top:.4rem;letter-spacing:.5px}
+
+/* SUBMIT */
+.submit-btn{
+  display:block;width:100%;padding:1rem;
+  background:var(--r);color:var(--wh);
+  font-family:'Bebas Neue',sans-serif;font-size:1.8rem;
+  letter-spacing:3px;border:3px solid var(--dk);
+  cursor:pointer;margin:2rem 0 .5rem;
+  position:relative;transition:transform .12s;
+}
+.submit-btn::after{content:'';position:absolute;right:-6px;bottom:-6px;width:100%;height:100%;background:var(--dk);z-index:-1}
+.submit-btn:hover{transform:translate(-2px,-2px)}
+
+/* RESULT */
+.result-box{
+  display:none;background:var(--wh);
+  border:4px solid var(--dk);padding:1.8rem;
+  text-align:center;margin:1rem 0;
+  position:relative;
+}
+.result-box::after{content:'';position:absolute;right:-7px;bottom:-7px;width:100%;height:100%;background:var(--r);z-index:-1}
+.result-score{font-family:'Bebas Neue',sans-serif;font-size:3.8rem;color:var(--r);line-height:1}
+.result-msg{font-size:1.05rem;font-weight:800;color:var(--dk);margin:.6rem 0}
+.result-detail{font-size:.85rem;font-weight:700;color:#555;margin-top:.3rem}
+
+/* AI FEEDBACK */
+.ai-fb{
+  display:none;background:var(--dk);
+  border:3px solid var(--dk);padding:1.2rem 1.4rem;
+  margin:.8rem 0;position:relative;
+}
+.ai-fb.show{display:block}
+.ai-fb-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;color:var(--y);letter-spacing:2px;margin-bottom:.5rem}
+.ai-fb-body{font-size:.87rem;font-weight:700;color:var(--wh);line-height:1.75;white-space:pre-wrap}
+
+/* LOADING */
+.loading-dots{color:var(--y);font-size:1.5rem;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* DOT SEP */
+.dot-sep{text-align:center;letter-spacing:10px;color:var(--r);font-size:1.4rem;margin:.8rem 0;font-weight:800}
+
+/* RESET BTN */
+.reset-btn{
+  display:none;width:100%;padding:.7rem;
+  background:var(--y);color:var(--dk);
+  font-family:'Bebas Neue',sans-serif;font-size:1.2rem;
+  letter-spacing:2px;border:3px solid var(--dk);
+  cursor:pointer;margin-top:.8rem;
+  position:relative;transition:transform .12s;
+}
+.reset-btn::after{content:'';position:absolute;right:-5px;bottom:-5px;width:100%;height:100%;background:var(--dk);z-index:-1}
+.reset-btn:hover{transform:translate(-2px,-2px)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="pop-header">
+    <div class="pop-title">POP ART QUIZ</div>
+    <div class="pop-sub">줄리아 오피 & 현대 팝아트</div>
+    <span class="pop-badge">★ CONTEMPORARY ART ★</span>
+  </div>
+
+  <!-- INTRO -->
+  <div class="intro-wrap">
+    <div class="intro-title">작가 소개 — JULIAN OPIE</div>
+    <div class="intro-text">
+      <b>줄리아 오피(Julian Opie, 1958~)</b>는 영국 런던 출신의 현대미술 작가로, 복잡한 형상을 극도로 단순화한 <b>아이콘적 스타일</b>로 세계적 명성을 얻었습니다. 사람·동물·풍경을 검은 윤곽선과 평면 색면으로 환원하는 그의 작법은 <b>팝아트의 현대적 계승</b>으로 평가받습니다.<br><br>
+      신호 표지판·픽토그램에서 영감을 받은 그의 인물상은 디지털 시대의 상징이 되었고, 블러(Blur) 앨범 커버 아트로 대중에게도 친숙합니다.
+    </div>
+    <div class="artist-grid">
+      <div class="artist-card blue">
+        <h4>핵심 스타일</h4>
+        <p>굵은 검은 윤곽선 · 평면 색채 · 눈 없는 얼굴 · 반복과 모듈화</p>
+      </div>
+      <div class="artist-card pink">
+        <h4>팝아트 연결</h4>
+        <p>워홀의 반복성 + 리히텐슈타인의 평면화 → 디지털 시대 재해석</p>
+      </div>
+    </div>
+    <div class="tag-row">
+      <span class="tag">팝아트</span>
+      <span class="tag">미니멀리즘</span>
+      <span class="tag">픽토그램</span>
+      <span class="tag">디지털아트</span>
+      <span class="tag">YBA</span>
+      <span class="tag">대중문화</span>
+      <span class="tag">아이콘</span>
+      <span class="tag">반복성</span>
+    </div>
+  </div>
+
+  <div class="dot-sep">• • • • •</div>
+
+  <!-- MCQ -->
+  <div class="section-label">객관식 문제</div>
+  <div id="mcq-area"></div>
+
+  <div class="dot-sep">• • • • •</div>
+
+  <!-- SUBJECTIVE -->
+  <div class="section-label">작품 맞추기</div>
+  <div id="subj-area"></div>
+
+  <button class="submit-btn" id="submit-btn">★ 채점하기 ★</button>
+
+  <div class="result-box" id="result-box">
+    <div class="result-score" id="score-text"></div>
+    <div class="result-msg" id="result-msg"></div>
+    <div class="result-detail" id="result-detail"></div>
+  </div>
+
+  <div class="ai-fb" id="ai-fb">
+    <div class="ai-fb-title">★ AI 선생님 피드백</div>
+    <div class="ai-fb-body" id="ai-fb-body"><span class="loading-dots">●●●</span></div>
+  </div>
+
+  <button class="reset-btn" id="reset-btn">↺ 다시 풀기</button>
+
+</div>
+
+<script>
+const mcqs=[
+  {q:"줄리아 오피의 작품 스타일에서 가장 두드러지는 특징은?",opts:["극사실주의적 묘사","굵은 윤곽선과 평면적 색채","추상적 붓터치와 질감","콜라주와 혼합 매체"],ans:1},
+  {q:"팝아트(Pop Art)가 본격적으로 등장한 시기는?",opts:["1930~40년대","1950~60년대","1970~80년대","1990~2000년대"],ans:1},
+  {q:"줄리아 오피가 영국 밴드 블러(Blur)의 앨범 커버에 참여한 것은 그의 작품 어떤 특성 때문인가?",opts:["사실적인 초상화 기법","대중문화와 결합한 아이콘적 단순함","추상 표현주의적 감성","전통적인 유화 기법"],ans:1},
+  {q:"다음 중 팝아트의 핵심 개념이 아닌 것은?",opts:["대중문화 이미지의 차용","반복과 복제","내면의 무의식 표현","상업적 이미지의 재해석"],ans:2},
+  {q:"앤디 워홀(Andy Warhol)의 대표적 기법은?",opts:["점묘법","실크스크린 인쇄","수묵담채","프레스코"],ans:1},
+  {q:"줄리아 오피의 인물 형상이 주로 참조한 시각 언어는?",opts:["중세 종교화","신호 표지판과 픽토그램","르네상스 조각","바로크 회화"],ans:1},
+  {q:"팝아트 작가 로이 리히텐슈타인(Roy Lichtenstein)의 작품에 자주 등장하는 기법은?",opts:["타시즘(자동기술법)","벤데이 도트(Ben-Day dots)","드리핑 기법","데칼코마니"],ans:1},
+  {q:"줄리아 오피가 속하는 영국 현대미술 그룹의 약칭은?",opts:["DKW","YBA","BBA","ART"],ans:1},
+];
+
+const subjs=[
+  {id:"s1",title:"작품 ① — 이 작품의 제목과 작가를 맞추세요",hint:"미국 팝아트의 거장, 반복과 복제의 아이콘 / 실크스크린, 1962",placeholder:"제목과 작가명을 써주세요 (예: 마릴린 먼로, 앤디 워홀)"},
+  {id:"s2",title:"작품 ② — 이 작품의 제목과 작가를 맞추세요",hint:"벤데이 도트와 만화 스타일로 유명한 작가 / 1963년 작품",placeholder:"제목과 작가명을 써주세요 (예: 키스, 로이 리히텐슈타인)"},
+];
+
+function buildMCQ(){
+  const area=document.getElementById('mcq-area');
+  mcqs.forEach((q,i)=>{
+    const box=document.createElement('div');
+    box.className='q-box';
+    box.innerHTML=`<div class="q-num">Q${i+1}</div><div class="q-text">${q.q}</div><div class="options" id="opts-${i}"></div>`;
+    area.appendChild(box);
+    const opts=box.querySelector(`#opts-${i}`);
+    q.opts.forEach((o,j)=>{
+      const btn=document.createElement('button');
+      btn.className='opt-btn';
+      btn.dataset.qi=i;btn.dataset.oi=j;
+      btn.textContent=`${['①','②','③','④'][j]} ${o}`;
+      btn.onclick=()=>{
+        document.querySelectorAll(`[data-qi="${i}"]`).forEach(b=>b.classList.remove('selected'));
+        btn.classList.add('selected');
+      };
+      opts.appendChild(btn);
+    });
+  });
+}
+
+function buildSubj(){
+  const area=document.getElementById('subj-area');
+  subjs.forEach((s,i)=>{
+    const box=document.createElement('div');
+    box.className='q-box';
+    const canvas=document.createElement('canvas');
+    canvas.width=300;canvas.height=180;
+    canvas.style.cssText='max-width:100%';
+    box.innerHTML=`<div class="q-num">주관식 Q${i+1}</div><div class="q-text">${s.title}</div>`;
+    const artDiv=document.createElement('div');
+    artDiv.className='artwork-reveal';
+    artDiv.appendChild(canvas);
+    artDiv.innerHTML+=`<div class="artwork-hint">힌트: ${s.hint}</div>`;
+    box.appendChild(artDiv);
+    const lbl=document.createElement('label');
+    lbl.className='subj-label';lbl.textContent='내 답:';
+    const ta=document.createElement('textarea');
+    ta.className='subj-input';ta.id=s.id;ta.placeholder=s.placeholder;ta.rows=2;
+    box.appendChild(lbl);box.appendChild(ta);
+    area.appendChild(box);
+    setTimeout(()=>drawArtwork(canvas,i),100);
+  });
+}
+
+function drawArtwork(canvas,idx){
+  const ctx=canvas.getContext('2d'),W=canvas.width,H=canvas.height;
+  if(idx===0){
+    const cols=['#FFD700','#FF69B4','#00CED1','#FF6347'];
+    for(let r=0;r<2;r++) for(let c=0;c<2;c++){
+      const x=c*W/2,y=r*H/2,w=W/2,h=H/2;
+      ctx.fillStyle=cols[r*2+c];ctx.fillRect(x,y,w,h);
+      ctx.fillStyle='#FFDAB9';
+      ctx.beginPath();ctx.ellipse(x+w/2,y+h*.38,w*.22,h*.3,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#111';ctx.lineWidth=2;ctx.stroke();
+      ctx.fillStyle='rgba(180,120,0,.85)';
+      ctx.beginPath();ctx.ellipse(x+w/2,y+h*.16,w*.2,h*.17,0,Math.PI,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#111';ctx.stroke();
+      ctx.fillStyle='#111';
+      ctx.beginPath();ctx.arc(x+w*.42,y+h*.35,2.5,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(x+w*.58,y+h*.35,2.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=cols[(r*2+c+2)%4];
+      ctx.fillRect(x+w*.25,y+h*.55,w*.5,h*.35);
+      ctx.strokeStyle='#111';ctx.strokeRect(x+w*.25,y+h*.55,w*.5,h*.35);
+    }
+    ctx.fillStyle='rgba(10,10,10,.65)';ctx.fillRect(0,H*.58,W,H*.42);
+    ctx.fillStyle='#FFE400';ctx.font='bold 12px sans-serif';ctx.textAlign='center';
+    ctx.fillText('▼ 일부만 공개',W/2,H*.76);
+  } else {
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
+    for(let x=0;x<W;x+=11) for(let y=0;y<H;y+=11){
+      ctx.fillStyle='rgba(200,0,0,.55)';
+      ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();
+    }
+    ctx.fillStyle='#FFECB3';
+    ctx.beginPath();ctx.ellipse(W*.36,H*.4,W*.17,H*.24,-.15,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#111';ctx.lineWidth=2.5;ctx.stroke();
+    ctx.fillStyle='#FFECB3';
+    ctx.beginPath();ctx.ellipse(W*.64,H*.38,W*.17,H*.24,.15,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#111';ctx.stroke();
+    ctx.fillStyle='#FFD700';
+    ctx.beginPath();ctx.ellipse(W*.64,H*.27,W*.14,H*.15,0,0,Math.PI);ctx.fill();
+    ctx.strokeStyle='#111';ctx.stroke();
+    ctx.fillStyle='rgba(0,0,20,.66)';ctx.fillRect(0,H*.6,W,H*.4);
+    ctx.fillStyle='#FFE400';ctx.font='bold 12px sans-serif';ctx.textAlign='center';
+    ctx.fillText('▼ 일부만 공개',W/2,H*.78);
+  }
+}
+
+buildMCQ();
+buildSubj();
+
+document.getElementById('submit-btn').onclick=async()=>{
+  let mcqScore=0;
+  mcqs.forEach((q,i)=>{
+    const btns=document.querySelectorAll(`[data-qi="${i}"]`);
+    btns.forEach(b=>{
+      b.disabled=true;
+      const oi=parseInt(b.dataset.oi);
+      if(b.classList.contains('selected')){
+        if(oi===q.ans){b.classList.add('correct');mcqScore++;}
+        else b.classList.add('wrong');
+      }
+      if(oi===q.ans) b.classList.add('correct');
+    });
+  });
+
+  const s1=document.getElementById('s1').value.trim();
+  const s2=document.getElementById('s2').value.trim();
+  document.getElementById('s1').disabled=true;
+  document.getElementById('s2').disabled=true;
+
+  const rb=document.getElementById('result-box');
+  rb.style.display='block';
+  document.getElementById('score-text').textContent=`객관식 ${mcqScore} / 8`;
+  const msgs=['다시 도전해봐요!','조금 더 공부해봐요!','꽤 잘했어요!','훌륭해요!','완벽합니다!'];
+  document.getElementById('result-msg').textContent=msgs[Math.min(Math.floor(mcqScore/2),4)];
+  document.getElementById('result-detail').textContent=`정답 ${mcqScore}개 · 오답 ${8-mcqScore}개`;
+
+  document.getElementById('submit-btn').disabled=true;
+  document.getElementById('submit-btn').style.opacity='.5';
+  document.getElementById('reset-btn').style.display='block';
+
+  const fb=document.getElementById('ai-fb');
+  fb.style.display='block';fb.classList.add('show');
+
+  try{
+    const prompt=`당신은 중학교 미술 교사입니다. 학생의 퀴즈 답변을 평가해주세요.
+
+[객관식 점수] ${mcqScore}/8점
+
+[주관식 1번 답] "${s1||'미응답'}"
+정답: 《마릴린 먼로》(Marilyn Diptych, 1962), 앤디 워홀 — 실크스크린으로 마릴린 먼로를 반복·복제한 팝아트 대표작
+
+[주관식 2번 답] "${s2||'미응답'}"
+정답: 《키스》(The Kiss, 1963), 로이 리히텐슈타인 — 만화 스타일과 벤데이 도트를 활용한 팝아트 대표작
+
+한국어로 친절하게 피드백해주세요 (150자 이내):
+1. 객관식 결과 총평 1문장
+2. 주관식 1번 평가 (맞음/아쉬움 + 작품 설명 1문장)
+3. 주관식 2번 평가 (맞음/아쉬움 + 작품 설명 1문장)
+4. 응원 한마디`;
+
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await res.json();
+    const txt=data.content?.find(c=>c.type==='text')?.text||'피드백을 불러오지 못했습니다.';
+    document.getElementById('ai-fb-body').textContent=txt;
+  } catch(e){
+    document.getElementById('ai-fb-body').textContent='AI 피드백 연결 오류입니다. 객관식 결과를 확인해주세요!';
+  }
+};
+
+document.getElementById('reset-btn').onclick=()=>{
+  location.reload();
+};
+</script>
+</body>
+</html>
