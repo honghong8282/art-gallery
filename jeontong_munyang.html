@@ -214,8 +214,10 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 /* ── 갤러리 ── */
 .gal-grid{max-width:1180px;margin:16px auto 0;padding:0 20px 60px;display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:14px}
-.gal-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s}
+.gal-card{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden;cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s;position:relative}
 .gal-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px var(--shadow);border-color:var(--accent)}
+.gal-del{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:50%;background:rgba(210,30,30,.9);color:#fff;border:2px solid #fff;font-size:.8rem;cursor:pointer;display:none;align-items:center;justify-content:center;z-index:2;padding:0;line-height:1}
+.gal-admin-mode .gal-del{display:flex}
 .gal-img{width:100%;aspect-ratio:1;object-fit:contain;background:var(--stage);display:block}
 .gal-info{padding:8px 12px 10px}
 .gal-name{font-family:var(--serif);font-weight:700;font-size:.95rem}
@@ -2715,6 +2717,7 @@ window._renderComp3DFrame=function(canvas,sp,spin){
   <div id="galHeader" style="max-width:1180px;margin:20px auto 0;padding:0 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap" hidden>
     <span style="font-family:var(--serif);font-weight:700;font-size:1.1rem">실시간 작품 갤러리</span>
     <span id="galStatus" style="color:var(--muted);font-size:.9rem"></span>
+    <button id="galAdminBtn" type="button" onclick="toggleGalAdmin()" style="margin-left:auto;padding:5px 14px;border:1px solid var(--line);border-radius:999px;background:transparent;cursor:pointer;font-size:.88rem;color:var(--muted)">관리자</button>
   </div>
   <div id="galEmpty" style="text-align:center;padding:64px 20px;color:var(--muted)" hidden>
     <div style="font-family:var(--serif);font-size:1.3rem;color:var(--ink);margin-bottom:8px">아직 제출된 작품이 없어요</div>
@@ -2840,9 +2843,29 @@ function makeCard(key,d){
   }
   const info=document.createElement("div"); info.className="gal-info";
   info.innerHTML='<div class="gal-name">'+name+'</div><div class="gal-meta">'+fmt(d.ts)+'</div>';
-  el.append(media,info);
+  const delBtn=document.createElement("button");
+  delBtn.className="gal-del"; delBtn.type="button"; delBtn.textContent="✕"; delBtn.title="삭제";
+  delBtn.onclick=e=>{e.stopPropagation();if(confirm('"'+(d.name||"이 작품")+'" 을(를) 갤러리에서 삭제할까요?'))db.ref("munyang_gallery/"+key).remove();};
+  el.append(media,info,delBtn);
   el.onclick=()=>openLbox(d);
   return el;
+}
+let galAdminMode=false;
+function toggleGalAdmin(){
+  if(!galAdminMode){
+    const pw=prompt("관리자 비밀번호를 입력하세요");
+    if(pw===null) return;
+    if(pw!=="16543"){ alert("비밀번호가 틀렸어요."); return; }
+    galAdminMode=true;
+    $("galGrid").classList.add("gal-admin-mode");
+    const btn=$("galAdminBtn");
+    btn.textContent="관리자 해제"; btn.style.background="var(--accent)"; btn.style.color="var(--accent-ink)"; btn.style.borderColor="var(--accent)";
+  } else {
+    galAdminMode=false;
+    $("galGrid").classList.remove("gal-admin-mode");
+    const btn=$("galAdminBtn");
+    btn.textContent="관리자"; btn.style.background=""; btn.style.color="var(--muted)"; btn.style.borderColor="";
+  }
 }
 function fmt(ts){
   const d=new Date(ts);
