@@ -146,11 +146,13 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
 #ecv{cursor:move;touch-action:none;box-shadow:0 6px 18px var(--shadow)}
 #pcv{cursor:grab;touch-action:pan-y}
 .top{position:relative}
-.credit{position:absolute;top:36px;right:20px;display:flex;align-items:center;gap:12px}
+.credit{position:absolute;top:46px;right:20px;display:flex;align-items:center;gap:12px}
 .credit-label{font-family:var(--sans);font-size:.66rem;letter-spacing:.34em;color:var(--muted)}
 .credit-rule{width:26px;height:1px;background:var(--accent);opacity:.55}
 .credit-name{font-family:var(--serif);font-weight:700;font-size:1.02rem;letter-spacing:.22em;color:var(--ink)}
-@media (max-width:640px){.credit{position:static;justify-content:flex-end;margin-bottom:8px}}
+.site-dl-btn{position:absolute;top:10px;right:20px;border:1px solid var(--line);background:var(--panel);padding:5px 13px;border-radius:999px;cursor:pointer;font-size:.74rem;color:var(--muted);display:inline-flex;align-items:center;gap:5px;box-shadow:0 1px 4px var(--shadow);transition:border-color .18s,color .15s,background .18s;white-space:nowrap}
+.site-dl-btn:hover{border-color:var(--accent);color:var(--ink);background:var(--accent-soft)}
+@media (max-width:640px){.credit{position:static;justify-content:flex-end;margin-bottom:4px}.site-dl-btn{position:static;margin:0 0 8px auto;display:flex;width:fit-content}}
 .etools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
 .etools .btn{padding:6px 11px;font-size:.88rem}
 @media (max-width:880px){
@@ -227,6 +229,7 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
 </head>
 <body>
 <header class="top">
+  <button id="siteDlBtn" class="site-dl-btn" type="button">⬇ 사이트 HTML 다운받기</button>
   <div class="credit" aria-label="made by 홍인"><span class="credit-label">MADE BY</span><span class="credit-rule" aria-hidden="true"></span><span class="credit-name">Hong</span></div>
   <h1>전통문양 도안 만들기</h1>
   <p id="subtitle"></p>
@@ -250,7 +253,7 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
     <div class="stage"><canvas id="cv" width="720" height="720" aria-label="패턴 미리보기"></canvas></div>
     <div class="actions">
       <button class="btn primary" id="dl" hidden>그림 파일로 저장</button>
-      <button class="btn primary" id="pHtmlDl" type="button">내 작품 HTML로 저장</button>
+      <button class="btn primary" id="pJpgDl" type="button">내 작품 JPG로 저장</button>
       <button class="btn" id="random">무작위로 조합하기</button>
       <span id="status" role="status"></span>
     </div>
@@ -384,7 +387,7 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
       <button class="btn" id="aDlFlat" type="button" hidden>펼친 도안 저장</button>
       <button class="btn" id="aReset" type="button">예시로 다시 시작</button>
       <button class="btn" id="aClear" type="button">모두 지우기</button>
-      <button class="btn primary" id="aHtmlDl" type="button">내 작품 HTML로 저장</button>
+      <button class="btn primary" id="aJpgDl" type="button">내 작품 JPG로 저장</button>
       <span id="aStatus" role="status"></span>
     </div>
     <div class="info">
@@ -2688,85 +2691,37 @@ window._renderComp3DFrame=function(canvas,sp,spin){
 (function(){
 const $=id=>document.getElementById(id);
 
-function esc(s){ return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-
-function generateWorkHTML(imgDataUrl, title, name, desc, motifInfo, arrInfo){
-  return `<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${esc(title)||"전통문양 작품"}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gowun+Dodum&display=swap" rel="stylesheet">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{min-height:100vh;background:#F0EBE0;display:flex;align-items:center;justify-content:center;font-family:'Gowun Dodum','Apple SD Gothic Neo',sans-serif;padding:24px}
-.card{background:#FDFAF6;border-radius:16px;overflow:hidden;max-width:560px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.18)}
-.img-wrap{aspect-ratio:1/1;overflow:hidden;background:#E8EDED}
-.img-wrap img{width:100%;height:100%;object-fit:contain;display:block}
-.info{padding:24px 28px 28px}
-.work-title{font-family:'Gowun Batang',serif;font-weight:700;font-size:1.5rem;color:#1C2333;margin-bottom:6px}
-.work-name{color:#566275;font-size:.95rem;margin-bottom:12px}
-.work-desc{color:#3A4455;font-size:.95rem;line-height:1.75;margin-bottom:12px}
-.meaning{color:#566275;font-size:.88rem;line-height:1.65;padding-top:14px;border-top:1px solid #E0D8CC}
-.meaning b{color:#1C2333;font-weight:400;font-family:'Gowun Batang',serif}
-.credit{margin-top:16px;text-align:right;font-size:.75rem;color:#BBA;letter-spacing:.08em}
-</style>
-</head>
-<body>
-<div class="card">
-  <div class="img-wrap"><img src="${imgDataUrl}" alt="${esc(title)||"전통문양 작품"}"></div>
-  <div class="info">
-    ${title?`<div class="work-title">${esc(title)}</div>`:""}
-    ${name?`<div class="work-name">${esc(name)}</div>`:""}
-    ${desc?`<div class="work-desc">${esc(desc)}</div>`:""}
-    ${(motifInfo||arrInfo)?`<div class="meaning">${motifInfo?`<b>문양의 뜻</b> ${esc(motifInfo)}`:""}${motifInfo&&arrInfo?"<br><br>":""}${arrInfo?`<b>배열 방법</b> ${esc(arrInfo)}`:""}` :""}
-    <div class="credit">전통문양 도안 만들기 · made by 홍인</div>
-  </div>
-</div>
-</body>
-</html>`;
-}
-
-function saveAsHTML(canvasId, statusId){
-  const src=$( canvasId);
+/* ── 작품 JPG 저장 ── */
+function saveAsJPG(canvasId, statusId){
+  const src=$(canvasId);
   const c=document.createElement("canvas"); c.width=c.height=720;
-  c.getContext("2d").drawImage(src,0,0,720,720);
-
-  let title="", name="", desc="", motifInfo="", arrInfo="";
-  if(canvasId==="cv"){
-    const m=window.MOTIFS&&window.MOTIFS.find(x=>x.id===(window.S&&window.S.motif));
-    const a=window.ARRS&&window.ARRS.find(x=>x.id===(window.S&&window.S.arr));
-    if(m) title=m.name+" 문양";
-    if(a) title+=" × "+a.name;
-    if(m) motifInfo=m.meaning||"";
-    if(a) arrInfo=a.desc||"";
-  } else {
-    title=($("aTitle")||{}).value||"";
-    name=($("aName")||{}).value||"";
-    desc=($("aDesc")||{}).value||"";
-  }
-
+  const cx=c.getContext("2d");
+  cx.fillStyle="#ffffff"; cx.fillRect(0,0,720,720);
+  cx.drawImage(src,0,0,720,720);
   c.toBlob(blob=>{
-    if(!blob){ $( statusId).textContent="저장 실패. 다시 눌러 주세요."; return; }
-    const reader=new FileReader();
-    reader.onload=function(){
-      const html=generateWorkHTML(reader.result,title.trim(),name.trim(),desc.trim(),motifInfo,arrInfo);
-      const a=document.createElement("a");
-      a.href=URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"}));
-      a.download=(name.trim()||title.trim()||"전통문양")+"_작품.html";
-      document.body.appendChild(a); a.click(); a.remove();
-      setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-      $(statusId).textContent="HTML 파일을 저장했어요!";
-      setTimeout(()=>$(statusId).textContent="",3000);
-    };
-    reader.readAsDataURL(blob);
-  },"image/png");
+    if(!blob){ $(statusId).textContent="저장 실패. 다시 눌러 주세요."; return; }
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="전통문양_작품.jpg";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    $(statusId).textContent="JPG 파일을 저장했어요!";
+    setTimeout(()=>$(statusId).textContent="",3000);
+  },"image/jpeg",0.92);
 }
 
-$("pHtmlDl").onclick=function(){ saveAsHTML("cv","status"); };
-$("aHtmlDl").onclick=function(){ saveAsHTML("pcv","aStatus"); };
+$("pJpgDl").onclick=function(){ saveAsJPG("cv","status"); };
+$("aJpgDl").onclick=function(){ saveAsJPG("pcv","aStatus"); };
+
+/* ── 사이트 HTML 다운받기 ── */
+$("siteDlBtn").onclick=function(){
+  const html="<!DOCTYPE html>\n"+document.documentElement.outerHTML;
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([html],{type:"text/html;charset=utf-8"}));
+  a.download="전통문양_만들기_체험.html";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+};
 
 })();
 </script>
