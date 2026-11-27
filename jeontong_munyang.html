@@ -104,7 +104,10 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
 
 .pad-wrap{position:fixed;inset:0;background:rgba(10,14,22,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
 .pad-wrap[hidden]{display:none}
-.pad{background:var(--panel);border-radius:10px;padding:18px;width:min(380px,100%);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.pad{background:var(--panel);border-radius:10px;padding:18px;width:min(420px,100%);box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto}
+.pad-gallery-wrap{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}
+.pad-gallery-wrap p{margin:0 0 8px;font-size:.88rem;color:var(--muted)}
+#padMsg{margin:6px 0 0;min-height:1.4em;font-size:.86rem;color:var(--accent)}
 .pad h2{font-family:var(--serif);margin:0 0 4px;font-size:1.2rem}
 .pad p{margin:0 0 12px;color:var(--muted);font-size:.9rem}
 .pad canvas{display:block;width:100%;aspect-ratio:1/1;height:auto;border-radius:6px;touch-action:none;cursor:crosshair;box-shadow:inset 0 0 0 1px var(--line)}
@@ -493,16 +496,21 @@ legend{font-family:var(--serif);font-weight:700;font-size:1.05rem;padding:0;marg
 <div class="pad-wrap" id="padWrap" hidden>
   <div class="pad" role="dialog" aria-modal="true" aria-labelledby="padTitle">
     <h2 id="padTitle">단위 문양 직접 그리기</h2>
-    <p>네모 칸 안에 문양 하나를 그리면, 그 문양이 반복되어 패턴이 됩니다.</p>
+    <p>그리고 추가하면 여러 문양을 쌓을 수 있어요. 쌓인 문양은 각각 패턴으로 쓸 수 있어요.</p>
     <canvas id="pad" width="300" height="300"></canvas>
     <label class="check"><input type="checkbox" id="padMirror" checked> 좌우 대칭으로 그리기</label>
     <div class="pad-row">
       <button class="btn" id="padUndo">한 획 지우기</button>
       <button class="btn" id="padClear">모두 지우기</button>
     </div>
-    <div class="pad-row">
+    <p id="padMsg"></p>
+    <div id="padGalleryWrap" class="pad-gallery-wrap" hidden>
+      <p>내 그림 문양 모음</p>
+      <div id="padGallery" class="pgrid"></div>
+    </div>
+    <div class="pad-row" style="margin-top:12px">
       <button class="btn" id="padCancel">닫기</button>
-      <button class="btn primary grow" id="padUse">이 문양으로 패턴 만들기</button>
+      <button class="btn primary grow" id="padUse">내 문양으로 추가</button>
     </div>
   </div>
 </div>
@@ -1451,8 +1459,12 @@ function persist(){ try{ localStorage.setItem("pattern-maker-v1", JSON.stringify
 
 const cache = {};
 let photoCanvas=null, libVersion=0, photoLib=[];
+const CUSTOM_KEY="pattern-custom-lib-v1", CUSTOM_MAX=12;
+let customLib=[];
 function getMotif(id){ if(id==="photo") return photoCanvas?{raster:photoCanvas}:{fills:[],strokes:[]};
-  if(id.startsWith("photo-")){ const p=photoLib.find(q=>q.id===id); return p&&p.c?{raster:p.c}:{fills:[],strokes:[]}; } if(id==="custom") return BUILDERS.custom(); return cache[id] || (cache[id]=BUILDERS[id]()); }
+  if(id.startsWith("photo-")){ const p=photoLib.find(q=>q.id===id); return p&&p.c?{raster:p.c}:{fills:[],strokes:[]}; }
+  if(id.startsWith("custom-")){ const e=customLib.find(q=>q.id===id); if(!e) return {fills:[],strokes:[]}; const p=new Path2D(); e.strokes.forEach(st=>{if(!st.length)return; p.moveTo(st[0][0],st[0][1]); if(st.length===1) p.lineTo(st[0][0]+.01,st[0][1]); else st.forEach(pt=>p.lineTo(pt[0],pt[1]));}); return {fills:[],strokes:[p]}; }
+  if(id==="custom") return BUILDERS.custom(); return cache[id] || (cache[id]=BUILDERS[id]()); }
 function palette(){ return PALETTES.find(p=>p.id===S.palette)||PALETTES[0]; }
 function inks(){ const p=palette(); return p.ink || [S.ink]; }
 function bgColor(){ const p=palette(); return p.bg || S.bg; }
